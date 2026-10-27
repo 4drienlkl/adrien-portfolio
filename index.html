@@ -201,8 +201,8 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 .cover::before { content: ""; position: absolute; inset: 0; border-radius: 12px; background: linear-gradient(115deg, transparent 30%, rgba(255, 255, 255, .12) 42%, transparent 52%); }
 .cover span { font: 600 .8rem/1 var(--cond); letter-spacing: .22em; text-transform: uppercase; background: rgba(13, 11, 9, .6); padding: 10px 14px; border: 1px solid var(--line); }
 .tt.open .cover { transform: rotateX(82deg); opacity: .3; }
-.tt.open .arm { transform: rotate(26deg); }
-.tt.open .vinyl { animation: spin 1.8s linear infinite 1.2s; }
+.tt.playing .arm { transform: rotate(26deg); }
+.tt.playing .vinyl { animation: spin 1.8s linear infinite .9s; }
 .crate { display: flex; gap: 8px; margin-top: 18px; align-items: center; }
 .crate small, .tower h3 { font: 600 .72rem/1 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
 .crate small { margin-right: 4px; }
@@ -211,6 +211,8 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 .sleeve-mini.on { box-shadow: 0 0 0 2px var(--amber), 0 4px 10px rgba(0, 0, 0, .5); }
 .now { font-size: .78rem; color: var(--muted); margin-top: 10px; min-height: 1.3em; }
 .now b { color: var(--ivory); font-weight: 500; }
+.now a, .tracks .via a { color: var(--amber); }
+.tracks .via { font-size: .74rem; color: #8a5a2b; margin-top: 2px; }
 .notes { align-self: center; margin-bottom: 40px; background: var(--paper); color: #2a1d10; padding: 26px 28px; border-radius: 2px; box-shadow: 0 20px 40px rgba(0, 0, 0, .6); transform: rotate(-1.5deg); max-width: 400px; }
 .notes small { font: 600 .7rem/1 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: #8a5a2b; }
 .notes h3 { font: 700 2rem/1 var(--cond); text-transform: uppercase; margin: 8px 0 10px; }
@@ -374,13 +376,13 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
         <div class="cover"><span>Lift the lid ↑</span></div>
       </div>
       <div class="crate" id="crate"><small>Crate</small></div>
-      <p class="now" id="now">Pick a record from the crate.</p>
+      <p class="now" id="now" aria-live="polite">Pick a record from the crate.</p>
     </div>
     <div class="notes">
       <small>Liner notes · Side B</small>
       <h3>Off the clock</h3>
       <p>Records, tapes, LEGO, coins and cards. The collecting habit is where my first business came from.</p>
-      <p>Lift the lid and pick a record, or pull a tape from the tower.</p>
+      <p>Pick a record to hear it, or pull a tape from the tower. The On Rotation tape plays straight through.</p>
       <p class="hand">Hover a tape, then press play →</p>
     </div>
     <div class="tower">

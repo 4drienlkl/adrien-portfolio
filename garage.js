@@ -21,7 +21,7 @@ var CARS = [
   {
     id: 'experience', title: 'Experience', kicker: 'Chapter I', roman: 'I',
     year: 2022, make: 'Acura', model: 'NSX Type S', spec: '600 hp · 3.5L twin-turbo V6 hybrid · AWD', file: 'nsx',
-    paint: /^Acura.*Paint_Material$/, color: '#a10f18', metal: 0.55,
+    paint: /^Acura.*Paint_Material$/, color: '#e0520f', metal: 0.5, // Thermal Orange Pearl
     hood: { meshes: /paint|carbon/i, region: { x: 0.9, y: 0.5, z: [0.8, 2.2] }, hinge: 'rear', angle: 0.95 },
     plate: 'EY · Fulton · Arête',
     stats: [['80 of 700+', 'EY selection'], ['3', 'Roles'], ['Adopted', 'Arête redesign'], ['On sale', 'Fulton slipper']],
@@ -101,11 +101,11 @@ var CONTACT = {
 
 var TAPES = [
   { title: 'On Rotation', tape: '#c8102e', tracks: [
-    ['My Beautiful Dark Twisted Fantasy', 'Kanye West · 2010', ''],
-    ['Graduation', 'Kanye West · 2007', ''],
-    ['Charm', 'Clairo · 2024', ''],
-    ['Bewitched', 'Laufey · 2023', ''],
-    ['Happier Than Ever', 'Billie Eilish · 2021', '']
+    ['My Beautiful Dark Twisted Fantasy', 'Kanye West · 2010', '', 1443160699],
+    ['Graduation', 'Kanye West · 2007', '', 1442846712],
+    ['Charm', 'Clairo · 2024', '', 1742301428],
+    ['Bewitched', 'Laufey · 2023', '', 1690609217],
+    ['Happier Than Ever', 'Billie Eilish · 2021', '', 1564530710]
   ]},
   { title: 'Collections', tape: '#e0a85e', tracks: [
     ['LEGO', '', 'Favorite set: the Star Wars Republic Dropship with AT-OT Walker.'],
@@ -119,12 +119,13 @@ var TAPES = [
     ['Fashion & hospitality', '', 'Two industries I follow closely, and part of why Arête and hospitality are on my list.']
   ]}
 ];
+// [album, artist, sleeve colour, label text, Apple Music ID of the track that plays]
 var ALBUMS = [
-  ['My Beautiful Dark Twisted Fantasy', 'Kanye West', '#c4161c', 'MBDTF'],
-  ['Graduation', 'Kanye West', '#b34fc0', 'Graduation'],
-  ['Charm', 'Clairo', '#8f9057', 'Charm'],
-  ['Bewitched', 'Laufey', '#7d93bd', 'Bewitched'],
-  ['Happier Than Ever', 'Billie Eilish', '#c9b48a', 'Happier Than Ever']
+  ['My Beautiful Dark Twisted Fantasy', 'Kanye West', '#c4161c', 'MBDTF', 1443160699],
+  ['Graduation', 'Kanye West', '#b34fc0', 'Graduation', 1442846712],
+  ['Charm', 'Clairo', '#8f9057', 'Charm', 1742301428],
+  ['Bewitched', 'Laufey', '#7d93bd', 'Bewitched', 1690609217],
+  ['Happier Than Ever', 'Billie Eilish', '#c9b48a', 'Happier Than Ever', 1564530710]
 ];
 
 /* ---------- Renderer, studio and turntable ---------- */
@@ -467,7 +468,11 @@ function swingHood(to, ms) {
   var car = current, h = car.hood, a0 = h.pivot.rotation.x;
   return tween(ms, function (k) {
     h.pivot.rotation.x = car.mirrorHood.rotation.x = a0 + (to - a0) * k;
-    car.lamp.intensity = 3.5 * (h.pivot.rotation.x / h.open);
+    var p = h.pivot.rotation.x / h.open, show = Math.min(1, Math.max(0, (p - 0.55) / 0.4));
+    car.lamp.intensity = 3.5 * p;
+    car.plate.visible = show > 0;
+    car.plate.material.opacity = show * show * (3 - 2 * show);
+    car.plate.position.y = car.bay.y - 0.14 * (1 - show);
   });
 }
 
@@ -544,7 +549,6 @@ async function openHood() {
   // Where the camera will sit, in the car's own frame (the turntable is still turning), so the plate faces it
   var camLocal = view.pos.clone().sub(new THREE.Vector3(0, DISC, 0)).applyAxisAngle(new THREE.Vector3(0, 1, 0), -angle);
   car.plate.quaternion.setFromRotationMatrix(new THREE.Matrix4().lookAt(camLocal, car.plate.position, new THREE.Vector3(0, 1, 0)));
-  car.plate.visible = true;
   await Promise.all([
     spinTo(angle, 1100),
     moveCamera(view, 1400),
@@ -563,11 +567,10 @@ async function closeHood(quick) {
   closePanel();
   body.classList.remove('hood');
   await Promise.all([
-    swingHood(0, ms * 0.8),
+    swingHood(0, ms * 0.7),
     moveCamera(homeView(), ms * 1.2),
     shiftTo(restShift(), ms)
   ]);
-  current.plate.visible = false;
   hoodOpen = false;
   controls.enabled = true;
   idleSpin = !still;
@@ -685,16 +688,50 @@ function sync() {
   layer(deck, deckOpen);
 }
 
+/* ---------- Music: Apple Music's 30-second previews ---------- */
+var SONGS = {}, songsReady = null, onSongEnd = null;
+var audio = new Audio();
+audio.volume = 0.85;
+audio.addEventListener('ended', function () { if (onSongEnd) onSongEnd(); });
+function loadSongs() {
+  if (!songsReady) {
+    songsReady = fetch('https://itunes.apple.com/lookup?id=' + ALBUMS.map(function (a) { return a[4]; }).join(','))
+      .then(function (r) { return r.json(); })
+      .then(function (d) {
+        d.results.forEach(function (r) {
+          if (r.previewUrl) SONGS[r.trackId] = { src: r.previewUrl, url: r.trackViewUrl, name: r.trackName.replace(/ \(feat\..*\)$/, '') };
+        });
+      })
+      .catch(function (e) { songsReady = null; throw e; });
+  }
+  return songsReady;
+}
+function playSong(id, done) {
+  onSongEnd = done || null;
+  function go() {
+    var s = SONGS[id];
+    if (!s) throw new Error('No preview for ' + id);
+    if (audio.src !== s.src) audio.src = s.src;
+    return audio.play().then(function () { return s; });
+  }
+  return SONGS[id] ? go() : loadSongs().then(go);
+}
+function stopSong() { onSongEnd = null; audio.pause(); }
+function appleLink(s) { return '<a href="' + s.url + '" target="_blank" rel="noopener">Full song on Apple Music ↗</a>'; }
+
 /* ---------- Listening room ---------- */
-var tt = $('tt'), deck = $('deck'), label = $('label');
+var tt = $('tt'), deck = $('deck'), label = $('label'), spinning = -1;
 function openRoom() {
   if (hoodOpen) closeHood(true);
+  loadSongs().catch(function () {});
   body.classList.add('room-open');
   sync();
   history.replaceState(null, '', '#room');
   $('room-close').focus({ preventScroll: true });
 }
 function leaveRoom() {
+  stopRecord();
+  if (deck.classList.contains('open')) eject();
   body.classList.remove('room-open');
   sync();
   history.replaceState(null, '', '#' + current.c.id);
@@ -706,6 +743,15 @@ $('room-close').addEventListener('click', leaveRoom);
 function toggleLid(force) {
   var open = tt.classList.toggle('open', force);
   tt.setAttribute('aria-label', open ? 'Close the record player' : 'Open the record player');
+  if (!open) stopRecord();
+}
+function stopRecord(note) {
+  if (spinning < 0) return;
+  spinning = -1;
+  stopSong();
+  tt.classList.remove('playing');
+  $('crate').querySelectorAll('.on').forEach(function (o) { o.classList.remove('on'); });
+  $('now').textContent = note || 'Pick a record from the crate.';
 }
 tt.addEventListener('click', function () { toggleLid(); });
 tt.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLid(); } });
@@ -716,12 +762,32 @@ ALBUMS.forEach(function (a) {
   b.style.setProperty('--s', 'linear-gradient(145deg,' + a[2] + ', #1a1a1a)');
   b.setAttribute('aria-label', 'Put on ' + a[0] + ' by ' + a[1]);
   b.addEventListener('click', function () {
+    var i = ALBUMS.indexOf(a);
+    // Same record again: lift the needle, or drop it back
+    if (spinning === i) {
+      if (audio.paused) { audio.play(); tt.classList.add('playing'); } else { audio.pause(); tt.classList.remove('playing'); }
+      return;
+    }
+    stopRecord();
     $('crate').querySelectorAll('.on').forEach(function (o) { o.classList.remove('on'); });
     b.classList.add('on');
     label.style.setProperty('--lbl', a[2]);
     $('label-text').textContent = a[3];
-    $('now').innerHTML = '♪ Now spinning: <b>' + a[0] + '</b> · ' + a[1];
     toggleLid(true);
+    spinning = i;
+    $('now').innerHTML = 'Dropping the needle on <b>' + a[0] + '</b>…';
+    playSong(a[4], function () { stopRecord('That’s the preview. Pick another record.'); })
+      .then(function (s) {
+        if (spinning !== i) return;
+        tt.classList.add('playing');
+        $('now').innerHTML = '♪ <b>' + s.name + '</b> · ' + a[1] + ' · 30-sec preview<br>' + appleLink(s);
+      })
+      .catch(function () {
+        if (spinning !== i) return;
+        spinning = -1;
+        b.classList.remove('on');
+        $('now').textContent = 'Couldn’t reach Apple Music. Try again in a moment.';
+      });
   });
   $('crate').appendChild(b);
 });
@@ -743,23 +809,38 @@ function insert(i) {
     tape.tracks.map(function (tr, n) {
       return '<li><span class="n">B' + (n + 1) + '</span><b>' + tr[0] + (tr[1] ? '<em>' + tr[1] + '</em>' : '') + '</b>' + (tr[2] ? '<p>' + tr[2] + '</p>' : '') + '</li>';
     }).join('') + '</ol>';
+  stopRecord();
+  audio.removeAttribute('src'); // so the deck can't resume whatever played last
   deck.classList.add('open'); sync();
-  setPlaying(true); mark();
+  setPlaying(true); cue();
   $('t-eject').focus({ preventScroll: true });
 }
 function mark() { $('jcard').querySelectorAll('.tracks li').forEach(function (li, n) { li.classList.toggle('now-playing', n === track); }); }
+// Play the current track if it's a song; the tape rolls on to the next one when the preview ends
+function cue() {
+  mark();
+  var id = tape.tracks[track][3], li = $('jcard').querySelectorAll('.tracks li')[track];
+  if (!id) return;
+  playSong(id, function () {
+    if (track < tape.tracks.length - 1) { track++; cue(); } else setPlaying(false);
+  }).then(function (s) {
+    if (!playing) audio.pause();
+    if (li && !li.querySelector('.via')) li.insertAdjacentHTML('beforeend', '<p class="via">30-sec preview · ' + appleLink(s) + '</p>');
+  }).catch(function () {});
+}
 function setPlaying(p) {
   playing = p;
   $('cassette').classList.toggle('playing', p);
   $('t-play').textContent = p ? '⏸' : '▶';
   clearInterval(timer);
   if (p) timer = setInterval(function () { secs++; $('counter').textContent = String(secs).padStart(3, '0'); }, 1000);
+  if (tape && tape.tracks[track][3]) { if (p) audio.play().catch(function () {}); else audio.pause(); }
 }
-function eject() { deck.classList.remove('open'); sync(); setPlaying(false); if (lastSpine) lastSpine.focus({ preventScroll: true }); }
+function eject() { deck.classList.remove('open'); sync(); setPlaying(false); stopSong(); if (lastSpine) lastSpine.focus({ preventScroll: true }); }
 $('t-eject').addEventListener('click', eject);
 $('t-play').addEventListener('click', function () { setPlaying(!playing); });
-$('t-next').addEventListener('click', function () { track = Math.min(track + 1, tape.tracks.length - 1); mark(); });
-$('t-prev').addEventListener('click', function () { track = Math.max(track - 1, 0); mark(); });
+$('t-next').addEventListener('click', function () { if (track < tape.tracks.length - 1) { track++; stopSong(); cue(); } });
+$('t-prev').addEventListener('click', function () { if (track > 0) { track--; stopSong(); cue(); } });
 deck.addEventListener('click', function (e) { if (e.target === deck) eject(); });
 
 /* ---------- Keyboard ---------- */
@@ -799,4 +880,4 @@ show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   setTimeout(function () { toast.classList.add('show'); }, 1200);
   setTimeout(function () { toast.classList.remove('show'); }, 6500);
 });
-window.__garage = { scene: scene, camera: camera, renderer: renderer, get current() { return current; }, show: show, openHood: openHood, closeHood: closeHood, turntable: turntable, controls: controls };
+window.__garage = { audio: audio, scene: scene, camera: camera, renderer: renderer, get current() { return current; }, show: show, openHood: openHood, closeHood: closeHood, turntable: turntable, controls: controls };
