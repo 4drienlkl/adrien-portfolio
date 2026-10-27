@@ -61,6 +61,56 @@ a { color: inherit; }
 .loader .bar { height: 3px; background: rgba(244, 239, 230, .12); overflow: hidden; }
 .loader .bar i { display: block; height: 100%; width: 4%; background: var(--amber); transition: width .2s; }
 
+/* ================= Garage door intro ================= */
+/* Corrugated steel: ribs every 34px with a highlight on top and a shadow underneath, lit from above */
+.shutter {
+  position: fixed; inset: 0; z-index: 60; overflow: visible;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 0%, rgba(255, 240, 220, .1), transparent 70%),
+    linear-gradient(90deg, rgba(0, 0, 0, .55), transparent 12%, transparent 88%, rgba(0, 0, 0, .55)),
+    repeating-linear-gradient(180deg, #3b3d41 0, #4c4e53 3px, #34363a 6px, #2a2b2e 26px, #1d1e20 31px, #0e0e0f 34px);
+  transform: translateY(0);
+}
+.shutter::before { /* fine vertical grain */
+  content: ""; position: absolute; inset: 0; pointer-events: none; opacity: .35;
+  background: repeating-linear-gradient(90deg, rgba(255, 255, 255, .025) 0 1px, transparent 1px 3px);
+}
+.shutter::after { /* warm light spilling out under the rising door */
+  content: ""; position: absolute; left: 0; right: 0; top: 100%; height: 34vh; pointer-events: none; opacity: 0;
+  background: linear-gradient(180deg, rgba(255, 214, 160, .38), rgba(255, 214, 160, .08) 45%, transparent);
+  transition: opacity .6s .35s;
+}
+.housing { position: fixed; left: 0; right: 0; top: 0; height: 22px; background: linear-gradient(180deg, #2c2d30, #151618); box-shadow: 0 6px 14px rgba(0, 0, 0, .6); z-index: 2; }
+.stencil { position: absolute; left: 50%; top: 42%; transform: translate(-50%, -50%); text-align: center; color: rgba(236, 228, 214, .82); mix-blend-mode: screen; white-space: nowrap; }
+.stencil small { display: block; font: 600 .82rem/1 var(--cond); letter-spacing: .42em; text-transform: uppercase; color: rgba(224, 168, 94, .85); }
+.stencil b { display: block; font: 700 clamp(3.4rem, 10vw, 7.5rem)/.9 var(--cond); letter-spacing: .08em; text-transform: uppercase; margin: 14px 0 10px; text-shadow: 0 2px 0 rgba(0, 0, 0, .5); }
+.stencil span { font: 600 clamp(1rem, 2.4vw, 1.5rem)/1 var(--cond); letter-spacing: .5em; text-transform: uppercase; }
+.keypad { position: absolute; right: max(28px, 6vw); top: 58%; width: 150px; padding: 12px 14px; background: linear-gradient(160deg, #1b1c1f, #0f1011); border: 1px solid rgba(255, 255, 255, .08); border-radius: 4px; box-shadow: 0 10px 24px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .06); font: 600 .72rem/1.3 var(--cond); letter-spacing: .18em; text-transform: uppercase; }
+.door-label { display: block; color: var(--muted); font-size: .62rem; }
+#door-status { display: block; color: var(--amber); margin-top: 3px; }
+#door-status a { color: var(--ivory); }
+.door-bar { height: 3px; margin-top: 10px; background: rgba(255, 255, 255, .08); overflow: hidden; }
+.door-bar i { display: block; height: 100%; width: 4%; background: var(--amber); box-shadow: 0 0 8px var(--amber); transition: width .25s; }
+.handle { position: absolute; left: 50%; bottom: 46px; width: 160px; height: 16px; margin-left: -80px; border-radius: 8px; background: linear-gradient(180deg, #5a5c61, #26272a); box-shadow: 0 4px 10px rgba(0, 0, 0, .6), inset 0 1px 0 rgba(255, 255, 255, .2); }
+.shutter.open { animation: roll 2.3s linear forwards; }
+.shutter.open.quick { animation-duration: 1.1s; }
+.shutter.open::after { opacity: 1; }
+.shutter.open .housing { animation: housing 2.3s ease forwards; }
+@keyframes roll {
+  0% { transform: translateY(0); animation-timing-function: cubic-bezier(.2, .8, .3, 1); }
+  8% { transform: translateY(-2.4%); animation-timing-function: ease-in-out; }   /* unlatch */
+  15% { transform: translateY(-1.4%); animation-timing-function: cubic-bezier(.5, 0, .2, 1); }
+  100% { transform: translateY(-104%); }
+}
+@keyframes housing { 0%, 70% { opacity: 1; } 100% { opacity: 0; } }
+@media (prefers-reduced-motion: reduce) {
+  .shutter.open { animation: none; opacity: 0; transition: opacity .6s !important; }
+}
+@media (max-width: 760px) {
+  .keypad { left: 50%; right: auto; transform: translateX(-50%); top: 64%; }
+  .stencil span { letter-spacing: .32em; }
+}
+
 /* ================= HUD ================= */
 .hud { position: fixed; z-index: 10; transition: opacity .5s, transform .5s; }
 .boot .hud { opacity: 0; }
@@ -345,6 +395,12 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 <p class="hud credit">3D models by <a href="https://sketchfab.com/ddiaz-design" target="_blank" rel="noopener">ddiaz-design</a> on Sketchfab (CC BY / CC BY-NC-SA)</p>
 </div>
 <div class="fade" aria-hidden="true"></div>
+<div class="shutter" id="shutter" role="status" aria-label="Opening the garage">
+  <div class="housing"></div>
+  <div class="stencil"><small>NYU Stern ’27 · Bay 01</small><b>The Garage</b><span>Adrien Pinilla</span></div>
+  <div class="keypad"><span class="door-label">Door</span><span id="door-status">Opening</span><div class="door-bar"><i id="door-led"></i></div></div>
+  <div class="handle"></div>
+</div>
 <div class="loader" id="loader" role="status"><small>The Garage</small><b>Rolling it out</b><div class="bar"><i id="bar"></i></div></div>
 <div class="hud top">
   <a class="pill" href="assets/Adrien-Pinilla-Resume.pdf" target="_blank" rel="noopener">Résumé</a>

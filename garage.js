@@ -600,8 +600,26 @@ function fillHud(c) {
   document.querySelectorAll('#picker .card').forEach(function (b) { b.classList.toggle('on', b.dataset.id === c.id); b.setAttribute('aria-current', b.dataset.id === c.id ? 'true' : 'false'); });
 }
 
-var loaderEl = $('loader'), bar = $('bar');
-function progress(e) { if (e.total) bar.style.width = Math.round(e.loaded / e.total * 100) + '%'; }
+var loaderEl = $('loader'), bar = $('bar'), shutter = $('shutter');
+function progress(e) {
+  if (!e.total) return;
+  var pct = Math.round(e.loaded / e.total * 100);
+  bar.style.width = pct + '%';
+  $('door-led').style.width = pct + '%';
+}
+
+// The garage door: closed while the first car loads, then it jolts and rolls up
+function openShutter() {
+  var again = false;
+  try { again = sessionStorage.getItem('garage-door') === '1'; sessionStorage.setItem('garage-door', '1'); } catch (e) {}
+  $('door-status').textContent = 'Open';
+  $('door-led').style.width = '100%';
+  shutter.classList.add('open');
+  if (again) shutter.classList.add('quick');
+  var ms = still ? 700 : again ? 1100 : 2300;
+  setTimeout(function () { shutter.hidden = true; }, ms);
+  return ms;
+}
 
 async function show(i, opts) {
   opts = opts || {};
@@ -610,10 +628,15 @@ async function show(i, opts) {
   if (hoodOpen) await closeHood(true);
   var first = !current;
   if (!first) { body.classList.add('blink'); await new Promise(function (r) { setTimeout(r, still ? 0 : 280); }); }
-  if (!cache[CARS[i].file]) { loaderEl.classList.add('show'); bar.style.width = '4%'; }
+  if (!cache[CARS[i].file] && !first) { loaderEl.classList.add('show'); bar.style.width = '4%'; }
   var car;
   try { car = await fetchCar(i, progress); }
-  catch (e) { loaderEl.querySelector('b').textContent = 'Couldn’t open the garage'; busy = false; return; }
+  catch (e) {
+    if (first) $('door-status').innerHTML = 'Door’s stuck · <a href="classic.html">open the quick view</a>';
+    else loaderEl.querySelector('b').textContent = 'Couldn’t open the garage';
+    busy = false;
+    return;
+  }
   loaderEl.classList.remove('show');
   if (current) turntable.remove(current.group);
   current = car; carIdx = i;
@@ -984,7 +1007,10 @@ controls.target.copy(start.target);
 loop();
 var deep = location.hash.slice(1), at = CARS.findIndex(function (c) { return c.id === deep; });
 show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
-  moveCamera(homeView(), 1800).then(function () {
+  if (!current) return;
+  var door = openShutter();
+  // The camera rolls in as the door goes up
+  moveCamera(homeView(), Math.max(1800, door)).then(function () {
     if (at >= 0) openHood();
     else if (deep === 'about') openSheet(ABOUT);
     else if (deep === 'contact') openSheet(CONTACT);
@@ -992,7 +1018,7 @@ show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   });
   var toast = $('toast');
   toast.textContent = phone.matches ? 'Tap the car to pop the hood · swipe to look around' : 'Click the car to pop the hood · drag to look around';
-  setTimeout(function () { toast.classList.add('show'); }, 1200);
-  setTimeout(function () { toast.classList.remove('show'); }, 6500);
+  setTimeout(function () { toast.classList.add('show'); }, door + 300);
+  setTimeout(function () { toast.classList.remove('show'); }, door + 5600);
 });
 window.__garage = { driver: driver, home: homeView, audio: audio, scene: scene, camera: camera, renderer: renderer, get current() { return current; }, show: show, openHood: openHood, closeHood: closeHood, turntable: turntable, controls: controls };
