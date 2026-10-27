@@ -230,6 +230,93 @@ if (!phone.matches) {
   composer.addPass(new OutputPass());
 }
 
+/* ---------- The driver: a collectible figure on a plinth, linked to the driver profile ---------- */
+function makeDriver() {
+  var fig = new THREE.Group(), body3 = new THREE.Group();
+  var suit = new THREE.MeshPhysicalMaterial({ color: 0x151517, roughness: 0.62, sheen: 1, sheenColor: 0x45454c, sheenRoughness: 0.45 });
+  var panel = new THREE.MeshPhysicalMaterial({ color: 0x5a5d63, roughness: 0.55, sheen: 0.8, sheenColor: 0x9a9aa0, sheenRoughness: 0.5 });
+  var gold = new THREE.MeshStandardMaterial({ color: 0xd8ae55, metalness: 1, roughness: 0.26 });
+  var shell = new THREE.MeshPhysicalMaterial({ color: 0x0d0d0f, roughness: 0.22, metalness: 0.15, clearcoat: 1, clearcoatRoughness: 0.04 });
+  var visor = new THREE.MeshPhysicalMaterial({ color: 0xe0b050, metalness: 1, roughness: 0.08, iridescence: 0.5, iridescenceIOR: 1.6, emissive: 0x4a3008, emissiveIntensity: 0.6 });
+  var rubber = new THREE.MeshStandardMaterial({ color: 0x0a0a0b, roughness: 0.8 });
+  function part(geo, mat, p, r, sc, parent) {
+    var m = new THREE.Mesh(geo, mat);
+    m.position.set(p[0], p[1], p[2]);
+    if (r) m.rotation.set(r[0], r[1], r[2]);
+    if (sc) m.scale.set(sc[0], sc[1], sc[2]);
+    (parent || body3).add(m);
+    return m;
+  }
+  [-1, 1].forEach(function (sd) {
+    // Boots, legs with a gray side panel and a gold stripe
+    part(new THREE.CapsuleGeometry(0.07, 0.12, 6, 16), rubber, [sd * 0.105, 0.075, 0.035], [Math.PI / 2, 0, 0]);
+    part(new THREE.CapsuleGeometry(0.082, 0.34, 6, 18), suit, [sd * 0.105, 0.36, 0]);
+    part(new THREE.CapsuleGeometry(0.03, 0.34, 4, 10), panel, [sd * 0.168, 0.37, 0], null, [0.6, 1, 1.1]);
+    part(new THREE.BoxGeometry(0.012, 0.4, 0.03), gold, [sd * 0.188, 0.37, 0]);
+    // Gray side panels down the torso
+    part(new THREE.CapsuleGeometry(0.035, 0.3, 4, 10), panel, [sd * 0.178, 0.78, 0], [0, 0, sd * -0.04], [0.7, 1, 1.4]);
+    // Shoulders, arms with gold cuffs, gray gloves
+    part(new THREE.SphereGeometry(0.078, 18, 14), panel, [sd * 0.215, 0.955, 0]);
+    part(new THREE.CapsuleGeometry(0.06, 0.2, 6, 16), suit, [sd * 0.262, 0.83, 0], [0, 0, sd * 0.28]);
+    part(new THREE.CapsuleGeometry(0.054, 0.18, 6, 16), suit, [sd * 0.31, 0.63, 0.04], [-0.3, 0, sd * 0.12]);
+    part(new THREE.TorusGeometry(0.055, 0.012, 8, 24), gold, [sd * 0.322, 0.535, 0.075], [Math.PI / 2 - 0.3, 0, 0]);
+    part(new THREE.SphereGeometry(0.06, 16, 12), panel, [sd * 0.326, 0.49, 0.09], null, [0.9, 1.1, 0.9]);
+    part(new THREE.BoxGeometry(0.014, 0.36, 0.05), gold, [sd * 0.205, 0.79, 0], [0, 0, 0]);
+  });
+  // Torso: a lathe turned profile, flattened front to back
+  var prof = [[0, 0.56], [0.17, 0.57], [0.19, 0.64], [0.18, 0.76], [0.2, 0.9], [0.205, 0.97], [0.15, 1.02], [0.06, 1.05], [0, 1.05]]
+    .map(function (p) { return new THREE.Vector2(p[0], p[1]); });
+  part(new THREE.LatheGeometry(prof, 40), suit, [0, 0, 0], null, [1, 1, 0.72]);
+  part(new THREE.TorusGeometry(0.183, 0.022, 10, 48), panel, [0, 0.6, 0], [Math.PI / 2, 0, 0], [1, 0.72, 1]);
+  part(new THREE.BoxGeometry(0.07, 0.045, 0.02), gold, [0, 0.6, 0.135]);
+  part(new THREE.TorusGeometry(0.075, 0.018, 10, 32), gold, [0, 1.04, 0], [Math.PI / 2, 0, 0]);
+  // Gray chest yoke and a gold zip line
+  part(new THREE.SphereGeometry(0.19, 32, 16, 0, Math.PI * 2, 0, 0.9), panel, [0, 0.83, 0], null, [1.04, 1, 0.74]);
+  part(new THREE.BoxGeometry(0.012, 0.36, 0.012), gold, [0, 0.8, 0.146]);
+  // Race number on the chest: AP 27
+  var cv = document.createElement('canvas'); cv.width = 256; cv.height = 128;
+  var g2 = cv.getContext('2d');
+  g2.fillStyle = '#d8ae55'; g2.font = '700 96px "Barlow Condensed", "Arial Narrow", sans-serif'; g2.textAlign = 'center';
+  g2.fillText('27', 128, 100);
+  var num = new THREE.CanvasTexture(cv); num.colorSpace = THREE.SRGBColorSpace;
+  part(new THREE.PlaneGeometry(0.11, 0.055), new THREE.MeshStandardMaterial({ map: num, transparent: true, metalness: 0.6, roughness: 0.3 }), [0.085, 0.86, 0.142], [0, 0.25, 0]);
+  // Helmet: gloss black shell, smoked gold visor, twin gold stripes over the top
+  var head = new THREE.Group();
+  head.position.set(0, 1.2, 0);
+  body3.add(head);
+  part(new THREE.CylinderGeometry(0.06, 0.07, 0.08, 20), panel, [0, -0.13, 0], null, null, head);
+  part(new THREE.SphereGeometry(0.17, 40, 28), shell, [0, 0, 0], null, [1, 1.02, 1.1], head);
+  part(new THREE.SphereGeometry(0.173, 40, 20, Math.PI / 2 - 0.85, 1.7, 1.25, 0.55), visor, [0, 0, 0], null, [1, 1.02, 1.1], head);
+  [-0.035, 0.035].forEach(function (x) {
+    part(new THREE.TorusGeometry(0.172, 0.009, 8, 40, Math.PI), gold, [x, 0, 0], [0, Math.PI / 2, 0], [1, 1.02, 1.1], head);
+  });
+  // Plinth with a gold ring
+  var base = new THREE.Group();
+  part(new THREE.CylinderGeometry(0.36, 0.4, 0.14, 48), new THREE.MeshStandardMaterial({ color: 0x18181b, roughness: 0.35, metalness: 0.6 }), [0, 0.07, 0], null, null, base);
+  part(new THREE.TorusGeometry(0.36, 0.008, 8, 64), gold, [0, 0.14, 0], [Math.PI / 2, 0, 0], null, base);
+  var blob = new THREE.Mesh(new THREE.PlaneGeometry(1.4, 1.4), new THREE.MeshBasicMaterial({ map: radial('rgba(0,0,0,0.85)', 'rgba(0,0,0,0)'), transparent: true, depthWrite: false }));
+  blob.rotation.x = -Math.PI / 2; blob.position.y = 0.004;
+  base.add(blob);
+  body3.position.y = 0.14;
+  fig.add(base, body3);
+  // A small spotlight on the figure so it reads against the dark floor
+  var spot = new THREE.SpotLight(0xffe2b8, 9, 6, 0.5, 0.6, 1.5);
+  spot.position.set(0.6, 3.2, 1.2);
+  spot.target = body3;
+  fig.add(spot);
+  fig.scale.setScalar(1.15);
+  fig.userData = { head: head, body: body3 };
+  return fig;
+}
+var driver = makeDriver();
+scene.add(driver);
+// Stand the figure behind the turntable, off to the right of the car, facing the viewer
+function placeDriver() {
+  var v = homeView(), az = Math.atan2(v.pos.x, v.pos.z) + (phone.matches ? 2.85 : 2.62), r = 4.5;
+  driver.position.set(Math.sin(az) * r, 0, Math.cos(az) * r);
+  driver.rotation.y = Math.atan2(v.pos.x - driver.position.x, v.pos.z - driver.position.z) + 0.25;
+}
+
 /* ---------- Cars ---------- */
 var loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 var cache = {};
@@ -442,6 +529,7 @@ function resize() {
   camera.fov = w / h < 1 ? 40 : 30;
   shift = hoodOpen ? hoodShift() : restShift();
   frame();
+  placeDriver();
 }
 // Shift the picture left when the panel covers the right side, so the open bay stays in view
 function frame() {
@@ -489,6 +577,12 @@ function loop() {
     return true;
   });
   if (idleSpin && !hoodOpen && !busy) turntable.rotation.y += dt * 0.12;
+  // The driver breathes and turns their helmet a little toward the pointer
+  var t = now / 1000, d = driver.userData;
+  d.body.scale.y = 1 + Math.sin(t * 1.6) * 0.006;
+  d.head.rotation.y += ((still ? 0 : look * 0.5) - d.head.rotation.y) * 0.06;
+  d.head.rotation.x = Math.sin(t * 0.7) * 0.03;
+  tagDriver();
   // The orbit limits only apply while the visitor is driving the camera; scripted moves aim directly
   if (controls.enabled) controls.update(); else camera.lookAt(controls.target);
   if (composer) composer.render(); else renderer.render(scene, camera);
@@ -658,6 +752,20 @@ CARS.forEach(function (c, i) {
   picker.appendChild(b);
 });
 
+// The driver's name tag follows the figure on screen
+var tag = $('driver-tag'), look = 0, tagPos = new THREE.Vector3();
+function tagDriver() {
+  driver.userData.head.getWorldPosition(tagPos);
+  tagPos.y += 0.32;
+  tagPos.project(camera);
+  var off = tagPos.z > 1 || Math.abs(tagPos.x) > 0.96 || Math.abs(tagPos.y) > 0.96;
+  tag.classList.toggle('off', off);
+  tag.style.transform = 'translate(' + ((tagPos.x + 1) / 2 * innerWidth) + 'px,' + ((1 - tagPos.y) / 2 * innerHeight) + 'px) translate(-50%, -100%)';
+}
+tag.addEventListener('click', function () { openSheet(ABOUT); });
+tag.addEventListener('mouseenter', function () { tag.classList.add('hot'); });
+tag.addEventListener('mouseleave', function () { tag.classList.remove('hot'); });
+
 // Click or tap the car itself to pop the hood (a drag to look around doesn't count)
 var ray = new THREE.Raycaster(), down = null;
 canvas.addEventListener('pointerdown', function (e) { down = { x: e.clientX, y: e.clientY, t: performance.now() }; });
@@ -667,14 +775,21 @@ canvas.addEventListener('pointerup', function (e) {
   down = null;
   if (moved > 6 || !quick) return;
   ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
-  var hit = ray.intersectObject(current.model, true).length > 0;
+  var onCar = ray.intersectObject(current.model, true)[0], onDriver = ray.intersectObject(driver, true)[0];
+  // Whichever is nearer the camera gets the click
+  if (onDriver && !hoodOpen && (!onCar || onDriver.distance < onCar.distance)) { openSheet(ABOUT); return; }
+  var hit = !!onCar;
   if (hit && !hoodOpen) openHood();
   else if (!hit && hoodOpen && !phone.matches) back();
 });
 canvas.addEventListener('pointermove', function (e) {
+  look = e.clientX / innerWidth * 2 - 1;
   if (e.buttons || !current || hoodOpen) return;
   ray.setFromCamera(new THREE.Vector2(e.clientX / innerWidth * 2 - 1, -(e.clientY / innerHeight) * 2 + 1), camera);
-  canvas.style.cursor = ray.intersectObject(current.model, true).length ? 'pointer' : 'grab';
+  var onCar = ray.intersectObject(current.model, true)[0], onD = ray.intersectObject(driver, true)[0];
+  var onDriver = !!onD && (!onCar || onD.distance < onCar.distance);
+  tag.classList.toggle('hot', onDriver);
+  canvas.style.cursor = onDriver || onCar ? 'pointer' : 'grab';
 });
 
 /* ---------- Layers: only the visible one is interactive ---------- */
@@ -880,4 +995,4 @@ show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   setTimeout(function () { toast.classList.add('show'); }, 1200);
   setTimeout(function () { toast.classList.remove('show'); }, 6500);
 });
-window.__garage = { audio: audio, scene: scene, camera: camera, renderer: renderer, get current() { return current; }, show: show, openHood: openHood, closeHood: closeHood, turntable: turntable, controls: controls };
+window.__garage = { driver: driver, home: homeView, audio: audio, scene: scene, camera: camera, renderer: renderer, get current() { return current; }, show: show, openHood: openHood, closeHood: closeHood, turntable: turntable, controls: controls };

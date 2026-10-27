@@ -106,6 +106,13 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 .card.on small { color: var(--amber); }
 .card.extra { flex-basis: 110px; }
 .hood .hud.picker, .dim .hud.picker { opacity: 0; transform: translateY(20px); pointer-events: none; }
+.driver-tag { left: 0; top: 0; z-index: 9; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 7px 12px 8px; background: var(--hud); border: 1px solid var(--line); border-bottom: 2px solid var(--amber); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); font: 700 .86rem/1 var(--cond); letter-spacing: .12em; text-transform: uppercase; white-space: nowrap; transition: opacity .3s, border-color .2s, background .2s; will-change: transform; }
+.driver-tag small { font: 600 .6rem/1 var(--cond); letter-spacing: .24em; color: var(--amber); }
+.driver-tag span { font: 500 .66rem/1 var(--cond); letter-spacing: .14em; color: var(--muted); max-height: 0; overflow: hidden; transition: max-height .2s; }
+.driver-tag.hot, .driver-tag:hover, .driver-tag:focus-visible { background: rgba(34, 28, 20, .92); border-color: var(--amber); }
+.driver-tag.hot span, .driver-tag:hover span, .driver-tag:focus-visible span { max-height: 1em; }
+.driver-tag::after { content: ""; position: absolute; left: 50%; bottom: -8px; width: 1px; height: 6px; background: var(--amber); }
+.driver-tag.off, .hood .driver-tag, .dim .driver-tag, .boot .driver-tag { opacity: 0; pointer-events: none; }
 .hud.credit { right: 28px; bottom: 96px; font-size: .64rem; letter-spacing: .04em; color: rgba(244, 239, 230, .42); pointer-events: auto; text-align: right; }
 .hud.credit a { color: inherit; }
 .hood .hud.credit, .dim .hud.credit { opacity: 0; }
@@ -284,7 +291,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
   .picker .arrow { display: none; }
   .card { flex: 0 0 120px; }
   .hud.credit { left: 16px; right: 16px; bottom: 6px; text-align: center; font-size: .58rem; }
-  .toast { top: auto; bottom: 240px; white-space: normal; text-align: center; width: max-content; max-width: 86vw; line-height: 1.4; }
+  .toast { top: 64px; white-space: normal; text-align: center; width: max-content; max-width: 86vw; line-height: 1.4; }
   .panel { width: 100%; height: 62dvh; top: auto; bottom: 0; background: rgba(8, 8, 9, .97); transform: translateY(105%); border-top: 1px solid var(--line); }
   .p-scroll { padding: 26px 20px 20px; }
   .p-head h2 { font-size: 2.5rem; }
@@ -334,6 +341,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
   <div id="picker-cards"></div>
   <button class="arrow" id="next-car" aria-label="Next car">›</button>
 </nav>
+<button class="hud driver-tag" id="driver-tag"><small>Driver</small>Adrien Pinilla<span>View profile →</span></button>
 <p class="hud credit">3D models by <a href="https://sketchfab.com/ddiaz-design" target="_blank" rel="noopener">ddiaz-design</a> on Sketchfab (CC BY / CC BY-NC-SA)</p>
 </div>
 <div class="fade" aria-hidden="true"></div>

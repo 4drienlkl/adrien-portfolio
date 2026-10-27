@@ -1,6 +1,6 @@
 # Adrien Pinilla · The Garage
 
-Personal portfolio site. The home page is a 3D garage, in the style of a racing game's car select: each car is a section of my portfolio. Click the car (or press Enter) to pop the hood, and that section opens from the engine bay. There's also a listening room upstairs for the off-the-clock side.
+Personal portfolio site. The home page is a 3D garage, in the style of a racing game's car select: each car is a section of my portfolio. Click the car (or press Enter) to pop the hood, and that section opens from the engine bay. The driver figure standing beside the turntable (black and gray suit, gold accents, #27) opens the driver profile. There's also a listening room upstairs, where the records and the On Rotation tape play Apple Music previews.
 
 | Car | Section |
 |---|---|
