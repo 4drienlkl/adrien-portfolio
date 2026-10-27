@@ -8,6 +8,16 @@
 <meta property="og:title" content="Adrien Pinilla · The Garage">
 <meta property="og:description" content="Analytical by training. Entrepreneurial by habit. NYU Stern '27.">
 <meta property="og:type" content="website">
+<meta property="og:url" content="https://adrienpinilla.vercel.app/">
+<link rel="canonical" href="https://adrienpinilla.vercel.app/">
+<meta property="og:image" content="https://adrienpinilla.vercel.app/assets/og-image.jpg">
+<meta property="og:image:width" content="1200">
+<meta property="og:image:height" content="630">
+<meta property="og:image:alt" content="Adrien Pinilla, NYU Stern ’27, in front of a garage of sports cars">
+<meta name="twitter:card" content="summary_large_image">
+<link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
+<link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
+<link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
 <meta name="theme-color" content="#0b0907">
 <link rel="preload" as="image" href="assets/garage-overview.webp">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -48,7 +58,7 @@ a { color: inherit; }
 }
 .cam { position: absolute; inset: 0; transform-origin: 50% 50%; transition: transform 1.2s var(--ease); }
 .photo { position: absolute; inset: 0; overflow: hidden; }
-.photo img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; animation: drift 40s ease-in-out infinite alternate; transition: filter .6s; }
+.photo img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; animation: drift 40s ease-in-out infinite alternate; }
 @keyframes drift { to { transform: scale(1.03) translate(-.4%, -.3%); } }
 .boot .photo img { filter: brightness(.08) saturate(.6); }
 .photo img { filter: brightness(1); transition: filter 1.8s ease-out; }
@@ -309,15 +319,16 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 </header>
 <div class="hud top">
   <span class="pill wide-only"><b>CR</b>$30K+ earned</span>
+  <a class="pill" href="assets/Adrien-Pinilla-Resume.pdf" target="_blank" rel="noopener">Résumé</a>
   <a class="pill" href="classic.html" title="The whole portfolio on one scrolling page">Quick view</a>
   <button class="pill" id="contact-btn">Contact</button>
 </div>
 <nav class="hud menu" id="menu" aria-label="Sections"></nav>
 <div class="hud hint" aria-hidden="true"><span><span class="key">← →</span>Browse</span><span><span class="key">Enter</span>Explore</span><span><span class="key">Esc</span>Back</span></div>
 <p class="hud note">Dream garage · AI-rendered scene</p>
-<div class="toast" id="toast"></div>
+<div class="toast" id="toast" role="status" aria-live="polite"></div>
 
-<aside class="panel" id="panel" role="dialog" aria-labelledby="p-title" aria-hidden="true">
+<aside class="panel" id="panel" role="dialog" aria-labelledby="p-title" aria-hidden="true" inert>
   <div class="p-scroll" id="p-scroll">
     <div class="p-head"><small id="p-kicker"></small><h2 id="p-title"></h2><p id="p-car"></p></div>
     <div class="p-stats" id="p-stats"></div>
@@ -331,7 +342,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 </aside>
 
 <!-- ================= Bonus: the listening room upstairs ================= -->
-<section class="room" id="room" aria-labelledby="room-title" aria-hidden="true">
+<section class="room" id="room" aria-labelledby="room-title" aria-hidden="true" inert>
   <div class="room-top">
     <div><small>Upstairs · Side B</small><h2 id="room-title">The Listening Room</h2></div>
     <button class="pill" id="room-close">↓ Back downstairs</button>
@@ -363,7 +374,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
   </div>
 </section>
 
-<div class="deck" id="deck" aria-hidden="true">
+<div class="deck" id="deck" role="dialog" aria-labelledby="c-title" aria-hidden="true" inert>
   <div class="player">
     <div class="tape-side">
       <div class="cassette" id="cassette">
@@ -386,6 +397,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 <script>
 var EMAIL = 'awp6745@stern.nyu.edu';
 var LINKEDIN = 'https://www.linkedin.com/in/adrien-pinilla-24b01630a/';
+var RESUME = 'assets/Adrien-Pinilla-Resume.pdf';
 
 /* ---------- Content ----------
    Each section is one hotspot in the photo. x / y: its centre as % of the photo.
@@ -454,7 +466,7 @@ var SECTIONS = [
       '<p>In 2020 I started an online collectibles business, and I’ve run it ever since. It taught me early how pricing, inventory and customer trust actually work.</p>' +
       '<p>I’ve taken that approach into consulting and strategy work with EY, Fulton and Arête: talk to the customer, test the numbers, and land on a clear recommendation. Outside class, I manage my own investment portfolio and study short-term rental markets.</p>' +
       '<blockquote class="quote">“The details are not the details. They make the design.”<cite>Charles Eames · on the wall behind the NSX</cite></blockquote></div>' +
-      '<div class="blk"><h3>What I’m looking for</h3><p>Internships and opportunities in wealth management, consulting, finance and hospitality.</p><div class="cta"><a class="btn primary" href="mailto:' + EMAIL + '">Email me</a><a class="btn" href="' + LINKEDIN + '" target="_blank" rel="noopener">LinkedIn ↗</a></div></div>'
+      '<div class="blk"><h3>What I’m looking for</h3><p>Internships and opportunities in wealth management, consulting, finance and hospitality.</p><div class="cta"><a class="btn primary" href="mailto:' + EMAIL + '">Email me</a><a class="btn" href="' + RESUME + '" target="_blank" rel="noopener">Résumé (PDF)</a><a class="btn" href="' + LINKEDIN + '" target="_blank" rel="noopener">LinkedIn ↗</a></div></div>'
   },
   {
     id: 'room', title: 'Listening Room', kicker: 'Upstairs · Bonus', car: 'The mezzanine lounge', c: '#e0a85e',
@@ -464,7 +476,7 @@ var SECTIONS = [
 var CONTACT = {
   title: 'Contact', kicker: 'Pit lane', car: 'Say hello', c: '#e0a85e', stats: [],
   body: '<div class="blk"><p>I’m open to internships and opportunities in wealth management, consulting, finance and hospitality, and always happy to connect with people in those fields.</p>' +
-    '<div class="cta"><a class="btn primary" href="mailto:' + EMAIL + '">' + EMAIL + '</a><a class="btn" href="' + LINKEDIN + '" target="_blank" rel="noopener">LinkedIn ↗</a></div></div>'
+    '<div class="cta"><a class="btn primary" href="mailto:' + EMAIL + '">' + EMAIL + '</a><a class="btn" href="' + RESUME + '" target="_blank" rel="noopener">Résumé (PDF)</a><a class="btn" href="' + LINKEDIN + '" target="_blank" rel="noopener">LinkedIn ↗</a></div></div>'
 };
 var MENU = ['experience', 'education', 'projects', 'skills', 'about', 'room'];
 var TOUR = ['experience', 'education', 'projects', 'skills', 'about']; // order for Prev / Next inside the panel
@@ -503,6 +515,7 @@ var body = document.body, cam = $('cam'), stage = $('stage'), spotsEl = $('spots
 var focusIdx = -1, openId = null;
 var byId = {};
 SECTIONS.forEach(function (s, i) { byId[s.id] = i; });
+var ORDER = SECTIONS.map(function (s, i) { return i; }).sort(function (a, b) { return SECTIONS[a].x - SECTIONS[b].x; });
 
 SECTIONS.forEach(function (s, i) {
   var el = document.createElement('button');
@@ -522,8 +535,21 @@ MENU.forEach(function (id) {
   b.innerHTML = (s.room ? '<small>Bonus</small>' : '') + s.title;
   b.addEventListener('click', function () { enter(byId[id]); });
   b.addEventListener('mouseenter', function () { setFocus(byId[id]); });
+  b.addEventListener('focus', function () { setFocus(byId[id]); });
   menuEl.appendChild(b);
 });
+
+function layer(el, on) { el.inert = !on; el.setAttribute('aria-hidden', on ? 'false' : 'true'); }
+function sync() {
+  var c = body.classList, room = c.contains('room-open'), deckOpen = deck.classList.contains('open');
+  var away = c.contains('zoomed') || c.contains('dim') || room;
+  layer($('viewport'), !away);
+  layer(menuEl, !away);
+  layer(document.querySelector('.hud.top'), !room && !(c.contains('panel-open') && innerWidth <= 760));
+  layer(panel, c.contains('panel-open') && !room);
+  layer($('room'), room && !deckOpen);
+  layer(deck, deckOpen);
+}
 
 function setFocus(i) {
   focusIdx = i;
@@ -570,7 +596,7 @@ function enter(i) {
   history.replaceState(null, '', '#' + s.id);
   if (s.room) {
     body.classList.remove('panel-open', 'has-closeup');
-    panel.setAttribute('aria-hidden', 'true');
+    sync();
     setTimeout(function () { if (openId === 'room') openRoom(); }, 900);
     return;
   }
@@ -578,7 +604,7 @@ function enter(i) {
   if (s.closeup) { cu.src = s.closeup; cu.alt = s.car; body.classList.add('has-closeup'); } else body.classList.remove('has-closeup');
   fillPanel(s);
   body.classList.add('panel-open');
-  panel.setAttribute('aria-hidden', 'false');
+  sync();
   setTimeout(function () { $('p-back').focus({ preventScroll: true }); }, 500);
 }
 
@@ -586,7 +612,7 @@ function openContact() {
   openId = 'contact';
   fillPanel(CONTACT);
   body.classList.add('dim', 'panel-open');
-  panel.setAttribute('aria-hidden', 'false');
+  sync();
   setTimeout(function () { $('p-back').focus({ preventScroll: true }); }, 500);
 }
 
@@ -594,12 +620,12 @@ function leave() {
   var was = openId;
   openId = null;
   body.classList.remove('zoomed', 'panel-open', 'dim', 'has-closeup', 'room-open');
-  panel.setAttribute('aria-hidden', 'true');
-  $('room').setAttribute('aria-hidden', 'true');
+  sync();
   cam.style.transform = '';
   history.replaceState(null, '', location.pathname);
   var i = byId[was];
   if (i != null) spotsEl.children[i].focus({ preventScroll: true });
+  else if (was === 'contact') $('contact-btn').focus({ preventScroll: true });
 }
 
 function step(d) {
@@ -615,7 +641,7 @@ $('contact-btn').addEventListener('click', openContact);
 
 /* ---------- Listening room ---------- */
 var tt = $('tt'), deck = $('deck'), label = $('label');
-function openRoom() { body.classList.add('room-open'); $('room').setAttribute('aria-hidden', 'false'); $('room-close').focus({ preventScroll: true }); }
+function openRoom() { body.classList.add('room-open'); sync(); $('room-close').focus({ preventScroll: true }); }
 $('room-close').addEventListener('click', leave);
 
 function toggleLid(force) {
@@ -641,13 +667,13 @@ ALBUMS.forEach(function (a) {
   $('crate').appendChild(b);
 });
 
-var tape = null, track = 0, playing = false, secs = 0, timer;
+var tape = null, track = 0, playing = false, secs = 0, timer, lastSpine = null;
 TAPES.forEach(function (t, i) {
   var b = document.createElement('button');
   b.className = 'spine';
   b.style.setProperty('--tape', t.tape);
   b.innerHTML = '<span class="strip"></span><span class="lab"><b>' + t.title + '</b><span>Side B · ' + t.tracks.length + ' tracks</span></span>';
-  b.addEventListener('click', function () { insert(i); });
+  b.addEventListener('click', function () { lastSpine = b; insert(i); });
   $('tapes').appendChild(b);
 });
 function insert(i) {
@@ -658,7 +684,7 @@ function insert(i) {
     tape.tracks.map(function (tr, n) {
       return '<li><span class="n">B' + (n + 1) + '</span><b>' + tr[0] + (tr[1] ? '<em>' + tr[1] + '</em>' : '') + '</b>' + (tr[2] ? '<p>' + tr[2] + '</p>' : '') + '</li>';
     }).join('') + '</ol>';
-  deck.classList.add('open'); deck.setAttribute('aria-hidden', 'false');
+  deck.classList.add('open'); sync();
   setPlaying(true); mark();
   $('t-eject').focus({ preventScroll: true });
 }
@@ -670,7 +696,7 @@ function setPlaying(p) {
   clearInterval(timer);
   if (p) timer = setInterval(function () { secs++; $('counter').textContent = String(secs).padStart(3, '0'); }, 1000);
 }
-function eject() { deck.classList.remove('open'); deck.setAttribute('aria-hidden', 'true'); setPlaying(false); }
+function eject() { deck.classList.remove('open'); sync(); setPlaying(false); if (lastSpine) lastSpine.focus({ preventScroll: true }); }
 $('t-eject').addEventListener('click', eject);
 $('t-play').addEventListener('click', function () { setPlaying(!playing); });
 $('t-next').addEventListener('click', function () { track = Math.min(track + 1, tape.tracks.length - 1); mark(); });
@@ -688,9 +714,9 @@ document.addEventListener('keydown', function (e) {
     else if (k === 'ArrowLeft') step(-1);
     return;
   }
-  var n = SECTIONS.length;
-  if (k === 'ArrowRight') { e.preventDefault(); setFocus((focusIdx + 1) % n); }
-  else if (k === 'ArrowLeft') { e.preventDefault(); setFocus((focusIdx - 1 + n) % n); }
+  var n = ORDER.length, o = ORDER.indexOf(focusIdx);
+  if (k === 'ArrowRight') { e.preventDefault(); setFocus(ORDER[(o + 1) % n]); }
+  else if (k === 'ArrowLeft') { e.preventDefault(); setFocus(ORDER[o < 0 ? n - 1 : (o - 1 + n) % n]); }
   else if (k === 'Enter' && focusIdx >= 0 && (e.target === body || e.target.classList.contains('spot'))) { e.preventDefault(); enter(focusIdx); }
 });
 // On screens narrower than the photo, crop more from the right (staircase) than the left (the NSX)
@@ -700,6 +726,7 @@ function fit() {
 }
 fit();
 addEventListener('resize', fit);
+addEventListener('resize', sync);
 addEventListener('resize', function () { if (openId && openId !== 'contact') aim(SECTIONS[byId[openId]], SECTIONS[byId[openId]].room); });
 
 /* ---------- Start: lights up, then a hint ---------- */
