@@ -10,8 +10,8 @@ Open `index.html` in a browser. No build step and no dependencies; everything is
 |---|---|
 | `index.html` | The garage home screen (click a car, or use the menu along the bottom) |
 | `classic.html` | The same portfolio as one scrolling page ("Quick view") |
-| `assets/` | The garage image (AI-rendered) and headshot |
-| `mockups/` | Earlier concept mockups and the prompts used to generate the garage image |
+| `assets/` | The garage image (AI-rendered), headshot, share card (`og-image.jpg`), favicons, and the résumé PDF (`Adrien-Pinilla-Resume.pdf`) |
+| `mockups/` | Earlier concept mockups, the prompts used to generate the garage image, and the plan for a sharper one (`garage-image-upgrade.md`) |
 
 ## Controls
 
