@@ -13,15 +13,16 @@
 <meta property="og:image" content="https://adrienpinilla.vercel.app/assets/og-image.jpg">
 <meta property="og:image:width" content="1200">
 <meta property="og:image:height" content="630">
-<meta property="og:image:alt" content="Adrien Pinilla, NYU Stern ’27, in front of a garage of sports cars">
+<meta property="og:image:alt" content="Adrien Pinilla, NYU Stern ’27, in a 3D garage with his dream cars">
 <meta name="twitter:card" content="summary_large_image">
 <link rel="icon" href="assets/favicon.svg" type="image/svg+xml">
 <link rel="icon" href="assets/favicon-32.png" type="image/png" sizes="32x32">
 <link rel="apple-touch-icon" href="assets/apple-touch-icon.png">
-<meta name="theme-color" content="#0b0907">
-<link rel="preload" as="image" href="assets/garage-overview.webp">
+<meta name="theme-color" content="#050506">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="preconnect" href="https://cdn.jsdelivr.net" crossorigin>
+<link rel="preload" href="assets/cars/nsx.glb" as="fetch" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
 <style>
 :root {
@@ -31,7 +32,7 @@
   --body: #ddd5c8;
   --amber: #e0a85e;
   --accent: #e0a85e;
-  --hud: rgba(11, 9, 7, 0.74);
+  --hud: rgba(10, 10, 12, 0.72);
   --line: rgba(244, 239, 230, 0.12);
   --paper: #efe6d2;
   --cond: "Barlow Condensed", "Arial Narrow", sans-serif;
@@ -42,76 +43,76 @@
 }
 * { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
-body { background: #0b0907; color: var(--ivory); font: 400 15px/1.55 var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
+body { background: #050506; color: var(--ivory); font: 400 15px/1.55 var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
 button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
 a { color: inherit; }
 :focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; }
-.sr-only { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); white-space: nowrap; }
 
-/* ================= Garage camera ================= */
-/* The photo fills the screen like a game camera; on narrow screens you swipe to look around */
-.viewport { position: fixed; inset: 0; overflow: hidden; }
-.stage {
-  position: absolute; left: 0; top: 50%;
-  width: max(100vw, calc(100dvh * 1672 / 941)); aspect-ratio: 1672 / 941;
-  transform: translateY(-50%); container-type: inline-size;
-}
-.cam { position: absolute; inset: 0; transform-origin: 50% 50%; transition: transform 1.2s var(--ease); }
-.photo { position: absolute; inset: 0; overflow: hidden; }
-.photo img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; animation: drift 40s ease-in-out infinite alternate; }
-@keyframes drift { to { transform: scale(1.03) translate(-.4%, -.3%); } }
-.boot .photo img { filter: brightness(.08) saturate(.6); }
-.photo img { filter: brightness(1); transition: filter 1.8s ease-out; }
-.dim .photo img, .room-open .photo img { filter: brightness(.45) saturate(.85); transition: filter .6s; }
-.vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 80% 75% at 50% 55%, transparent 55%, rgba(0, 0, 0, .6)); }
-.closeup { position: fixed; inset: 0; width: 100%; height: 100%; object-fit: cover; opacity: 0; pointer-events: none; transition: opacity .7s .5s; }
-.has-closeup .closeup { opacity: 1; }
-
-/* ================= Hotspots ================= */
-.spot { position: absolute; transform: translate(-50%, -50%); width: var(--w); height: var(--hh); }
-.spot .hit { position: absolute; inset: 0; border-radius: 40%; }
-.glow {
-  position: absolute; left: 50%; top: calc(50% + var(--hh) * .4); width: var(--w); height: var(--h);
-  transform: translate(-50%, -50%) scale(.85); border-radius: 50%; pointer-events: none;
-  background: radial-gradient(ellipse, var(--c), transparent 70%);
-  mix-blend-mode: screen; opacity: 0; transition: opacity .35s, transform .35s;
-}
-.tag {
-  position: absolute; left: 50%; bottom: calc(100% - 4px); transform: translateX(-50%);
-  display: flex; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
-  font: 600 .8rem/1 var(--cond); letter-spacing: .14em; text-transform: uppercase;
-}
-.pin { width: 12px; height: 12px; border-radius: 50%; background: var(--c); box-shadow: 0 0 0 3px color-mix(in srgb, var(--c) 30%, transparent); animation: pulse 2.2s ease-in-out infinite; flex: none; }
-@keyframes pulse { 50% { box-shadow: 0 0 0 9px transparent; } }
-.tag span { background: var(--hud); padding: 7px 10px; border-left: 2px solid var(--c); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); opacity: 0; transform: translateY(4px); transition: opacity .25s, transform .25s; }
-.tag em { font-style: normal; color: var(--muted); margin-right: 6px; }
-.spot:hover .glow, .spot.focus .glow { opacity: .9; transform: translate(-50%, -50%) scale(1); }
-.spot:hover .tag span, .spot.focus .tag span { opacity: 1; transform: none; }
-.zoomed .spot, .boot .spot, .dim .spot { opacity: 0; pointer-events: none; }
-.spot { transition: opacity .3s; }
+/* ================= Showroom ================= */
+#gl { position: fixed; inset: 0; width: 100%; height: 100%; display: block; cursor: grab; touch-action: none; }
+#gl:active { cursor: grabbing; }
+.fade { position: fixed; inset: 0; background: #050506; pointer-events: none; opacity: 0; transition: opacity .28s; z-index: 5; }
+.boot .fade, .blink .fade { opacity: 1; }
+.boot .fade { transition-duration: 1.2s; }
+.loader { position: fixed; z-index: 6; left: 50%; top: 50%; transform: translate(-50%, -50%); text-align: center; opacity: 0; transition: opacity .3s; pointer-events: none; width: min(320px, 80vw); }
+.loader.show { opacity: 1; }
+.loader small { font: 600 .74rem/1 var(--cond); letter-spacing: .3em; text-transform: uppercase; color: var(--amber); }
+.loader b { display: block; font: 700 1.6rem/1.2 var(--cond); letter-spacing: .06em; text-transform: uppercase; margin: 8px 0 14px; }
+.loader .bar { height: 3px; background: rgba(244, 239, 230, .12); overflow: hidden; }
+.loader .bar i { display: block; height: 100%; width: 4%; background: var(--amber); transition: width .2s; }
 
 /* ================= HUD ================= */
-.hud { position: fixed; z-index: 10; transition: opacity .6s; }
+.hud { position: fixed; z-index: 10; transition: opacity .5s, transform .5s; }
 .boot .hud { opacity: 0; }
-.zoomed .hud.menu, .zoomed .hud.hint, .zoomed .hud.note, .dim .hud.menu, .dim .hud.hint, .dim .hud.note, .room-open .hud { opacity: 0; pointer-events: none; }
-.hud.id { left: 0; top: 0; padding: 22px 28px 40px; background: linear-gradient(180deg, rgba(11, 9, 7, .9), rgba(11, 9, 7, .55) 65%, transparent); min-width: 260px; pointer-events: none; }
+.hud.id { left: 0; top: 0; padding: 22px 28px; pointer-events: none; }
 .hud.id small { font: 600 .76rem/1 var(--cond); letter-spacing: .26em; text-transform: uppercase; color: var(--amber); }
-.hud.id h1 { font: 700 2.3rem/1 var(--cond); letter-spacing: .04em; text-transform: uppercase; margin-top: 6px; }
+.hud.id h1 { font: 700 2.1rem/1 var(--cond); letter-spacing: .04em; text-transform: uppercase; margin-top: 6px; }
 .hud.id p { font-size: .82rem; color: var(--muted); margin-top: 6px; }
 .hud.top { right: 22px; top: 20px; display: flex; gap: 8px; }
 .pill { font: 600 .8rem/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; background: var(--hud); padding: 10px 13px; border: 1px solid var(--line); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: border-color .2s, color .2s; }
 a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber); }
-.pill b { color: var(--amber); }
-.hud.menu { left: 28px; right: 28px; bottom: 22px; display: flex; gap: 6px; flex-wrap: wrap; }
-.menu button { font: 600 .82rem/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; padding: 11px 14px; background: var(--hud); border: 1px solid var(--line); border-bottom: 2px solid var(--c, var(--line)); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: background .2s, transform .2s; }
-.menu button:hover, .menu button.focus { background: rgba(30, 24, 18, .92); transform: translateY(-2px); }
-.menu button small { color: var(--muted); margin-right: 6px; font-weight: 500; }
-.hud.hint { right: 28px; bottom: 70px; font: 600 .76rem/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; gap: 16px; pointer-events: none; text-shadow: 0 1px 8px #000; }
-.key { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 5px; border-radius: 10px; background: var(--ivory); color: #111; margin-right: 6px; font-size: .68rem; text-shadow: none; }
-.hud.note { right: 28px; bottom: 26px; font-size: .66rem; letter-spacing: .08em; color: rgba(244, 239, 230, .5); pointer-events: none; text-shadow: 0 1px 6px #000; }
+.key { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ivory); color: #111; margin-right: 8px; font: 600 .66rem/1 var(--cond); letter-spacing: .06em; }
+
+/* Car card, Forza-style, on the left */
+.hud.car { left: 28px; top: 50%; transform: translateY(-50%); width: 300px; }
+.car-head { display: flex; gap: 12px; align-items: stretch; }
+.badge { display: grid; place-items: center; min-width: 44px; padding: 0 6px; background: var(--amber); color: #140d08; font: 700 1.3rem/1 var(--cond); letter-spacing: .02em; }
+.hud.car small { display: block; font: 600 .78rem/1 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); }
+.hud.car h2 { font: 700 2.5rem/.95 var(--cond); text-transform: uppercase; letter-spacing: .01em; margin-top: 4px; }
+.spec { font: 500 .8rem/1.3 var(--cond); letter-spacing: .12em; text-transform: uppercase; color: var(--muted); margin-top: 12px; padding-top: 10px; border-top: 1px solid var(--line); }
+.chapter { margin-top: 18px; font: 600 .8rem/1 var(--cond); letter-spacing: .22em; text-transform: uppercase; color: var(--amber); }
+.chapter b { display: block; font: 700 1.9rem/1 var(--cond); letter-spacing: .03em; color: var(--ivory); margin-top: 6px; }
+.cstats { display: grid; grid-template-columns: 1fr 1fr; gap: 12px 14px; margin-top: 14px; }
+.cstats div { border-top: 2px solid var(--amber); padding-top: 7px; }
+.cstats b { display: block; font: 700 1.3rem/1 var(--cond); }
+.cstats span { font-size: .66rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.hood-btn { margin-top: 20px; display: inline-flex; align-items: center; padding: 13px 18px; background: var(--amber); color: #140d08; font: 700 .9rem/1 var(--cond); letter-spacing: .18em; text-transform: uppercase; transition: transform .2s, background .2s; }
+.hood-btn:hover { background: #f0bd78; transform: translateY(-2px); }
+.hood-btn .key { background: #140d08; color: var(--amber); }
+.hood .hud.car { opacity: 0; transform: translate(-30px, -50%); pointer-events: none; }
+
+/* Picker along the bottom */
+.hud.picker { left: 28px; right: 28px; bottom: 22px; display: flex; gap: 6px; align-items: stretch; }
+.picker .arrow { width: 40px; background: var(--hud); border: 1px solid var(--line); font: 600 1.2rem/1 var(--cond); flex: none; transition: border-color .2s, color .2s; }
+.picker .arrow:hover { border-color: var(--amber); color: var(--amber); }
+#picker-cards { display: flex; gap: 6px; flex: 1; overflow-x: auto; scrollbar-width: none; }
+#picker-cards::-webkit-scrollbar { display: none; }
+.card { flex: 1 0 128px; text-align: left; padding: 10px 12px 11px; background: var(--hud); border: 1px solid var(--line); border-bottom: 2px solid transparent; backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); transition: background .2s, border-color .2s, transform .2s; }
+.card small { display: block; font: 600 .66rem/1 var(--cond); letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.card b { display: block; font: 700 1.05rem/1.1 var(--cond); letter-spacing: .06em; text-transform: uppercase; margin-top: 6px; }
+.card span { display: block; font-size: .74rem; color: var(--muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.card:hover { background: rgba(28, 26, 24, .9); transform: translateY(-2px); }
+.card.on { border-bottom-color: var(--amber); background: rgba(34, 28, 20, .92); }
+.card.on small { color: var(--amber); }
+.card.extra { flex-basis: 110px; }
+.hood .hud.picker, .dim .hud.picker { opacity: 0; transform: translateY(20px); pointer-events: none; }
+.hud.credit { right: 28px; bottom: 96px; font-size: .64rem; letter-spacing: .04em; color: rgba(244, 239, 230, .42); pointer-events: auto; text-align: right; }
+.hud.credit a { color: inherit; }
+.hood .hud.credit, .dim .hud.credit { opacity: 0; }
 .toast { position: fixed; z-index: 11; left: 50%; top: 22px; transform: translate(-50%, -10px); opacity: 0; font: 600 .8rem/1 var(--cond); letter-spacing: .18em; text-transform: uppercase; background: var(--hud); border: 1px solid var(--line); padding: 10px 14px; transition: opacity .5s, transform .5s; pointer-events: none; white-space: nowrap; }
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
-.zoomed .toast, .dim .toast { opacity: 0; }
+.hood .toast, .dim .toast { opacity: 0; }
+.dim #gl { filter: brightness(.45); transition: filter .5s; }
 
 /* ================= Detail panel ================= */
 .panel {
@@ -120,7 +121,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
   transform: translateX(105%); transition: transform .6s cubic-bezier(.2, .8, .2, 1);
   display: flex; flex-direction: column;
 }
-.panel-open .panel { transform: none; transition-delay: .45s; }
+.panel-open .panel { transform: none; }
 .p-scroll { overflow-y: auto; padding: 84px 40px 24px 64px; flex: 1; scrollbar-width: thin; scrollbar-color: rgba(244,239,230,.2) transparent; }
 .p-head small { font: 600 .8rem/1 var(--cond); letter-spacing: .24em; text-transform: uppercase; color: var(--accent); }
 .p-head h2 { font: 700 3.4rem/.95 var(--cond); text-transform: uppercase; margin: 10px 0 6px; letter-spacing: .01em; }
@@ -260,23 +261,31 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 
 /* ================= Phone ================= */
 @media (max-width: 760px) {
-  .viewport { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
-  .viewport::-webkit-scrollbar { display: none; }
-  .hud.id { padding: 62px 16px 30px; min-width: 0; right: 0; }
+  .hud.id { padding: 16px; }
+  .hud.id h1 { font-size: 1.5rem; }
+  .hud.id p, .hud.id small { display: none; }
+  .hud.id { padding-top: 22px; }
   .panel-open .hud.id, .panel-open .hud.top { opacity: 0; pointer-events: none; }
-  .hud.id h1 { font-size: 1.75rem; }
-  .hud.top { right: 12px; top: 14px; }
+  .hud.top { right: 12px; top: 14px; gap: 6px; }
+  .hud.top .pill { padding: 9px 10px; }
   .hud.top .wide-only { display: none; }
-  .hud.hint { display: none; }
-  .hud.note { right: auto; left: 16px; bottom: 74px; }
-  .hud.menu { left: 0; right: 0; bottom: 14px; flex-wrap: nowrap; overflow-x: auto; padding: 0 16px; scrollbar-width: none; }
-  .hud.menu::-webkit-scrollbar { display: none; }
-  .menu button { flex: none; }
-  .tag span { opacity: 1; transform: none; }
-  .toast { top: auto; bottom: 120px; }
-  .panel { width: 100%; background: #0b0907; transform: translateY(100%); }
-  .p-scroll { padding: 64px 20px 20px; }
-  .p-head h2 { font-size: 2.7rem; }
+  .hud.car { left: 16px; right: 16px; top: auto; bottom: 128px; transform: none; width: auto; }
+  .hood .hud.car { transform: translateY(20px); }
+  .car-head { gap: 10px; }
+  .badge { min-width: 38px; font-size: 1.1rem; }
+  .hud.car h2 { font-size: 1.8rem; }
+  .spec { margin-top: 8px; padding-top: 7px; font-size: .7rem; }
+  .chapter { display: none; }
+  .cstats { display: none; }
+  .hood-btn { margin-top: 12px; padding: 11px 14px; font-size: .82rem; }
+  .hud.picker { left: 0; right: 0; bottom: 24px; padding: 0 16px; }
+  .picker .arrow { display: none; }
+  .card { flex: 0 0 120px; }
+  .hud.credit { left: 16px; right: 16px; bottom: 6px; text-align: center; font-size: .58rem; }
+  .toast { top: auto; bottom: 240px; white-space: normal; text-align: center; width: max-content; max-width: 86vw; line-height: 1.4; }
+  .panel { width: 100%; height: 62dvh; top: auto; bottom: 0; background: rgba(8, 8, 9, .97); transform: translateY(105%); border-top: 1px solid var(--line); }
+  .p-scroll { padding: 26px 20px 20px; }
+  .p-head h2 { font-size: 2.5rem; }
   .p-nav { padding: 12px 20px 18px; }
   .room-top { padding: 16px; }
   .room-top h2 { font-size: 1.8rem; }
@@ -301,32 +310,39 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 </head>
 <body class="boot">
 
-<div class="viewport" id="viewport">
-  <div class="stage" id="stage">
-    <div class="cam" id="cam">
-      <div class="photo"><img id="photo" src="assets/garage-overview.webp" alt="A private garage with an Acura NSX, Ferrari 488, Corvette C8 and Mercedes SLS, two vintage motorcycles and a mezzanine lounge" width="1672" height="941"></div>
-      <div id="spots"></div>
-    </div>
-    <div class="vignette"></div>
-  </div>
-</div>
-<img class="closeup" id="closeup" alt="">
-
+<div id="showroom">
+<canvas id="gl" aria-label="3D garage. Use the car buttons below, or click the car to open its hood." role="img"></canvas>
 <header class="hud id">
   <small>NYU Stern ’27 · The Garage</small>
   <h1>Adrien Pinilla</h1>
   <p>Analytical by training. Entrepreneurial by habit.</p>
 </header>
+<section class="hud car" aria-live="polite" aria-label="Selected car">
+  <div class="car-head">
+    <span class="badge" id="c-badge" aria-hidden="true">I</span>
+    <div><small id="c-year"></small><h2 id="c-model"></h2></div>
+  </div>
+  <p class="spec" id="c-spec"></p>
+  <p class="chapter"><span id="c-kicker"></span><b id="c-section"></b></p>
+  <div class="cstats" id="c-stats"></div>
+  <button class="hood-btn" id="hood-btn"><span class="key">Enter</span>Open the hood</button>
+</section>
+<nav class="hud picker" id="picker" aria-label="Cars and sections">
+  <button class="arrow" id="prev-car" aria-label="Previous car">‹</button>
+  <div id="picker-cards"></div>
+  <button class="arrow" id="next-car" aria-label="Next car">›</button>
+</nav>
+<p class="hud credit">3D models by <a href="https://sketchfab.com/ddiaz-design" target="_blank" rel="noopener">ddiaz-design</a> on Sketchfab (CC BY / CC BY-NC-SA)</p>
+</div>
+<div class="fade" aria-hidden="true"></div>
+<div class="loader" id="loader" role="status"><small>The Garage</small><b>Rolling it out</b><div class="bar"><i id="bar"></i></div></div>
 <div class="hud top">
-  <span class="pill wide-only"><b>CR</b>$30K+ earned</span>
   <a class="pill" href="assets/Adrien-Pinilla-Resume.pdf" target="_blank" rel="noopener">Résumé</a>
-  <a class="pill" href="classic.html" title="The whole portfolio on one scrolling page">Quick view</a>
+  <a class="pill wide-only" href="classic.html" title="The whole portfolio on one scrolling page">Quick view</a>
   <button class="pill" id="contact-btn">Contact</button>
 </div>
-<nav class="hud menu" id="menu" aria-label="Sections"></nav>
-<div class="hud hint" aria-hidden="true"><span><span class="key">← →</span>Browse</span><span><span class="key">Enter</span>Explore</span><span><span class="key">Esc</span>Back</span></div>
-<p class="hud note">Dream garage · AI-rendered scene</p>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
+<noscript><p style="position:fixed;inset:auto 0 40%;text-align:center">The garage needs JavaScript. <a href="classic.html">Open the quick view</a>.</p></noscript>
 
 <aside class="panel" id="panel" role="dialog" aria-labelledby="p-title" aria-hidden="true" inert>
   <div class="p-scroll" id="p-scroll">
@@ -336,7 +352,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
   </div>
   <nav class="p-nav">
     <button id="p-prev"></button>
-    <button id="p-back"><span class="key">B</span>Garage</button>
+    <button id="p-back"><span class="key">Esc</span>Close hood</button>
     <button id="p-next"></button>
   </nav>
 </aside>
@@ -394,356 +410,9 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
   </div>
 </div>
 
-<script>
-var EMAIL = 'awp6745@stern.nyu.edu';
-var LINKEDIN = 'https://www.linkedin.com/in/adrien-pinilla-24b01630a/';
-var RESUME = 'assets/Adrien-Pinilla-Resume.pdf';
-
-/* ---------- Content ----------
-   Each section is one hotspot in the photo. x / y: its centre as % of the photo.
-   w / h: floor-glow size; hh: hotspot height (both % of photo width). z: camera push-in.
-   closeup: optional close-up image that fades in after the push-in (e.g. 'assets/closeup-nsx.webp'). */
-var SECTIONS = [
-  {
-    id: 'experience', title: 'Experience', kicker: 'Chapter I', car: 'Acura NSX Type S · Valencia Red Pearl', c: '#d11a2a',
-    x: 17.6, y: 68.5, w: 28, h: 7, hh: 11, z: 1.7, closeup: null,
-    stats: [['80 of 700+', 'EY selection'], ['3', 'Roles'], ['Adopted', 'Arête redesign'], ['On sale', 'Fulton outdoor slipper']],
-    body:
-      '<article class="blk"><div class="blk-head"><h3>EY</h3><span class="when">May – Aug 2026</span></div><p class="role">Future Bridge Program Participant · <em>80 of 700+ selected</em></p><dl class="par">' +
-      '<div><dt>Challenge</dt><dd>Solve a strategy case for a coffee company in EY’s 12-week program on consulting and business strategy.</dd></div>' +
-      '<div><dt>What I did</dt><dd>Structured the problem with my team and built our recommendation. Took part in workshops, case exercises and networking sessions with EY professionals.</dd></div>' +
-      '<div class="res"><dt>Result</dt><dd>Presented our recommendations to EY professionals as one of ~80 participants chosen from 700+ applicants.</dd></div></dl></article>' +
-      '<article class="blk"><div class="blk-head"><h3>Fulton</h3><span class="when">Jan – May 2026</span></div><p class="role">Brand Strategy Consultant · <em>NYU Stern client project</em></p><dl class="par">' +
-      '<div><dt>Challenge</dt><dd>Fulton, an insole brand expanding into slippers, needed a clearer picture of its core customer and how to stand apart.</dd></div>' +
-      '<div><dt>What I did</dt><dd>On a team of 4, ran a few dozen consumer interviews on brand perception and needs, then built an ideal-customer persona and positioning around it.</dd></div>' +
-      '<div class="res"><dt>Result</dt><dd>Recommended targeting that persona and launching an outdoor slipper to compete with Birkenstock. Fulton’s outdoor slipper is now on sale.</dd></div></dl></article>' +
-      '<article class="blk"><div class="blk-head"><h3>Arête</h3><span class="when">Sept – Nov 2024</span></div><p class="role">User Interface Intern · <em>Design adopted</em></p><dl class="par">' +
-      '<div><dt>Challenge</dt><dd>Arête, a marketplace for emerging fashion designers, needed shoppers to find and browse products more easily.</dd></div>' +
-      '<div><dt>What I did</dt><dd>On a small team, mapped usability gaps in navigation and product discovery, then designed a new homepage and interface as interactive Figma prototypes.</dd></div>' +
-      '<div class="res"><dt>Result</dt><dd>Arête adopted our homepage and UI redesign.</dd></div></dl></article>'
-  },
-  {
-    id: 'skills', title: 'Skills', kicker: 'Chapter IV', car: 'Ferrari 488 GTB · Rosso Corsa', c: '#e8202a',
-    x: 39.3, y: 62.7, w: 21, h: 5.5, hh: 7.5, z: 2, closeup: null,
-    stats: [['Excel', 'Bloomberg · Minitab'], ['Figma', 'UI prototyping'], ['Interviews', 'Personas · positioning'], ['Python · SQL', 'Basics']],
-    body:
-      '<div class="blk"><h3>Finance &amp; Analysis</h3><p>Valuing assets and stress-testing assumptions.</p><ul class="chips"><li>Excel</li><li>Bloomberg Terminal</li><li>Minitab</li><li>NOI &amp; cap rates</li><li>Cash-on-cash returns</li><li>Debt service</li><li>Scenario analysis</li></ul></div>' +
-      '<div class="blk"><h3>Strategy &amp; Research</h3><p>Turning customer insight into a recommendation.</p><ul class="chips"><li>Consumer interviews</li><li>Customer personas</li><li>Brand positioning</li><li>Case structuring</li><li>Stakeholder presentations</li></ul></div>' +
-      '<div class="blk"><h3>Design &amp; Operations</h3><p>Building products and running a business.</p><ul class="chips"><li>Figma</li><li>UI prototyping</li><li>Pricing</li><li>Inventory</li><li>Fulfillment</li><li>Customer relationships</li></ul></div>' +
-      '<div class="blk"><p><b style="color:var(--ivory);font-weight:500">Also:</b> Microsoft Office &amp; PowerPoint · Python &amp; SQL (basic) · PC building and GPU maintenance · Spanish (elementary)</p></div>'
-  },
-  {
-    id: 'projects', title: 'Projects', kicker: 'Chapter III', car: 'Chevrolet Corvette C8 · Rapid Blue', c: '#2f7bff',
-    x: 58.0, y: 60.0, w: 19, h: 5, hh: 7, z: 2, closeup: null,
-    stats: [['$30K+', 'Revenue since 2020'], ['450+', 'Customers'], ['4.8★+', 'Seller rating'], ['2.5–5%', 'Astoria cap rates']],
-    body:
-      '<article class="blk"><div class="blk-head"><h3>Online Collectibles Business</h3><span class="when">2020 – Present</span></div><p class="role">Founder &amp; Operator</p>' +
-      '<ul class="bul"><li>Built an online resale business for Pokémon trading cards and Funko figures, selling on <b>eBay, TCGplayer and Mercari</b></li><li>Handle pricing, inventory, fulfillment and customer service end to end, using demand and pricing trends to decide what to buy</li></ul>' +
-      '<div class="figs"><div><b>$30K+</b><span>Revenue</span></div><div><b>450+</b><span>Customers</span></div><div><b>4.8★+</b><span>Rating</span></div></div></article>' +
-      '<article class="blk"><div class="blk-head"><h3>Astoria Real Estate Analysis</h3><span class="when">May – Jul 2026</span></div><p class="role">Independent multifamily acquisition &amp; valuation study</p>' +
-      '<ul class="bul"><li>Screened a few dozen multifamily and mixed-use properties (under 6 units) in Astoria, Queens</li><li>Modeled NOI, cap rates, leverage, debt service and cash-on-cash returns under different income, expense and financing assumptions</li><li>Finding: a market split between rent-stabilized and free-market units, with tight cap rates</li></ul>' +
-      '<div class="figs"><div><b>$1.8M–$4M</b><span>Price range</span></div><div><b>2.5–5%</b><span>Cap rates</span></div></div></article>' +
-      '<div class="blk"><h3>Next up</h3><p>Studying short-term rental markets, with plans to launch an Airbnb arbitrage venture.</p></div>'
-  },
-  {
-    id: 'education', title: 'Education', kicker: 'Chapter II', car: 'Mercedes-Benz SLS AMG · Iridium Silver', c: '#d6dade',
-    x: 74.2, y: 64.5, w: 20, h: 6, hh: 12, z: 1.9, closeup: null,
-    stats: [['3.68', 'GPA / 4.00'], ['#1 of 120+', 'Beta Alpha Psi rush'], ['2', 'Majors'], ['Dec 2027', 'Graduation']],
-    body:
-      '<article class="blk"><div class="blk-head"><h3>New York University</h3><span class="when">Expected Dec 2027</span></div>' +
-      '<ul class="bul"><li><b>B.S. in Business, Technology &amp; Entrepreneurship</b>, Stern School of Business</li><li><b>B.A. in Public Policy</b> (double major), Wagner School of Public Service</li><li>Cumulative GPA <b>3.68 / 4.00</b></li></ul>' +
-      '<ul class="chips"><li>Strategic Management</li><li>Finance</li><li>Financial Accounting</li><li>Personal Finance</li><li>Decision Models &amp; Analytics</li><li>Statistics</li><li>Economics</li><li>Management &amp; Organizations</li><li>Computer Programming</li><li>Public Policy</li></ul></article>' +
-      '<article class="blk"><div class="blk-head"><h3>Beta Alpha Psi</h3><span class="when">Dec 2025 – Present</span></div><p class="role">Business Honor Society, Mu Chapter · Platinum Member · Community Service Chair</p>' +
-      '<ul class="bul"><li><b>Ranked #1 of 120+ candidates</b> in a competitive rush and named Candidate of the Semester</li><li>Organize community service events and partner with outside organizations, opening volunteer opportunities to <b>~115 members</b> this semester</li><li>Weekly professional development: technical training, case prep and industry speakers</li></ul></article>' +
-      '<article class="blk"><div class="blk-head"><h3>Chaminade High School</h3><span class="when">Mineola, NY · 2024</span></div><ul class="bul"><li><b>4.0 unweighted GPA</b>, four-year Honor Roll</li><li>Excellence of Character Award</li></ul></article>'
-  },
-  {
-    id: 'about', title: 'About', kicker: 'Heritage', car: 'The two vintage bikes on the rug', c: '#d2a06a',
-    x: 48.4, y: 77.0, w: 26, h: 7, hh: 9, z: 1.8, closeup: null,
-    stats: [['2020', 'Started my first business'], ['4', 'Fields I’m targeting']],
-    body:
-      '<div class="blk"><div class="about-top"><img src="assets/headshot.jpg" alt="Portrait of Adrien Pinilla"><p style="margin:0">NYU Stern junior studying Business, Technology &amp; Entrepreneurship, with a second major in Public Policy at NYU Wagner.</p></div>' +
-      '<p>In 2020 I started an online collectibles business, and I’ve run it ever since. It taught me early how pricing, inventory and customer trust actually work.</p>' +
-      '<p>I’ve taken that approach into consulting and strategy work with EY, Fulton and Arête: talk to the customer, test the numbers, and land on a clear recommendation. Outside class, I manage my own investment portfolio and study short-term rental markets.</p>' +
-      '<blockquote class="quote">“The details are not the details. They make the design.”<cite>Charles Eames · on the wall behind the NSX</cite></blockquote></div>' +
-      '<div class="blk"><h3>What I’m looking for</h3><p>Internships and opportunities in wealth management, consulting, finance and hospitality.</p><div class="cta"><a class="btn primary" href="mailto:' + EMAIL + '">Email me</a><a class="btn" href="' + RESUME + '" target="_blank" rel="noopener">Résumé (PDF)</a><a class="btn" href="' + LINKEDIN + '" target="_blank" rel="noopener">LinkedIn ↗</a></div></div>'
-  },
-  {
-    id: 'room', title: 'Listening Room', kicker: 'Upstairs · Bonus', car: 'The mezzanine lounge', c: '#e0a85e',
-    x: 68.0, y: 28.5, w: 30, h: 5, hh: 9, z: 2, room: true
-  }
-];
-var CONTACT = {
-  title: 'Contact', kicker: 'Pit lane', car: 'Say hello', c: '#e0a85e', stats: [],
-  body: '<div class="blk"><p>I’m open to internships and opportunities in wealth management, consulting, finance and hospitality, and always happy to connect with people in those fields.</p>' +
-    '<div class="cta"><a class="btn primary" href="mailto:' + EMAIL + '">' + EMAIL + '</a><a class="btn" href="' + RESUME + '" target="_blank" rel="noopener">Résumé (PDF)</a><a class="btn" href="' + LINKEDIN + '" target="_blank" rel="noopener">LinkedIn ↗</a></div></div>'
-};
-var MENU = ['experience', 'education', 'projects', 'skills', 'about', 'room'];
-var TOUR = ['experience', 'education', 'projects', 'skills', 'about']; // order for Prev / Next inside the panel
-
-var TAPES = [
-  { title: 'On Rotation', tape: '#c8102e', tracks: [
-    ['My Beautiful Dark Twisted Fantasy', 'Kanye West · 2010', ''],
-    ['Graduation', 'Kanye West · 2007', ''],
-    ['Charm', 'Clairo · 2024', ''],
-    ['Bewitched', 'Laufey · 2023', ''],
-    ['Happier Than Ever', 'Billie Eilish · 2021', '']
-  ]},
-  { title: 'Collections', tape: '#e0a85e', tracks: [
-    ['LEGO', '', 'Favorite set: the Star Wars Republic Dropship with AT-OT Walker.'],
-    ['Coins', '', 'A numismatics habit: history you can hold in your hand.'],
-    ['Vinyl & cassettes', '', 'You’re standing in the room.'],
-    ['Pokémon', '', 'Where the collectibles business started in 2020.']
-  ]},
-  { title: 'Outside', tape: '#2f7bff', tracks: [
-    ['Sports cars', '', 'Favorite: the Acura NSX, parked up front downstairs.'],
-    ['Hiking', '', 'Getting out of the city whenever I can.'],
-    ['Fashion & hospitality', '', 'Two industries I follow closely, and part of why Arête and hospitality are on my list.']
-  ]}
-];
-var ALBUMS = [
-  ['My Beautiful Dark Twisted Fantasy', 'Kanye West', '#c4161c', 'MBDTF'],
-  ['Graduation', 'Kanye West', '#b34fc0', 'Graduation'],
-  ['Charm', 'Clairo', '#8f9057', 'Charm'],
-  ['Bewitched', 'Laufey', '#7d93bd', 'Bewitched'],
-  ['Happier Than Ever', 'Billie Eilish', '#c9b48a', 'Happier Than Ever']
-];
-
-/* ---------- Garage ---------- */
-var $ = function (id) { return document.getElementById(id); };
-var body = document.body, cam = $('cam'), stage = $('stage'), spotsEl = $('spots'), menuEl = $('menu'), panel = $('panel');
-var focusIdx = -1, openId = null;
-var byId = {};
-SECTIONS.forEach(function (s, i) { byId[s.id] = i; });
-var ORDER = SECTIONS.map(function (s, i) { return i; }).sort(function (a, b) { return SECTIONS[a].x - SECTIONS[b].x; });
-
-SECTIONS.forEach(function (s, i) {
-  var el = document.createElement('button');
-  el.className = 'spot';
-  el.style.cssText = 'left:' + s.x + '%;top:' + s.y + '%;--w:' + s.w + 'cqw;--h:' + s.h + 'cqw;--hh:' + s.hh + 'cqw;--c:' + s.c;
-  el.setAttribute('aria-label', s.title + ': ' + s.car);
-  el.innerHTML = '<span class="glow"></span><span class="hit"></span><span class="tag"><b class="pin"></b><span><em>' + s.kicker + '</em>' + s.title + '</span></span>';
-  el.addEventListener('click', function () { enter(i); });
-  el.addEventListener('mouseenter', function () { setFocus(i); });
-  el.addEventListener('focus', function () { setFocus(i); });
-  spotsEl.appendChild(el);
-});
-MENU.forEach(function (id) {
-  var s = SECTIONS[byId[id]], b = document.createElement('button');
-  b.style.setProperty('--c', s.c);
-  b.dataset.id = id;
-  b.innerHTML = (s.room ? '<small>Bonus</small>' : '') + s.title;
-  b.addEventListener('click', function () { enter(byId[id]); });
-  b.addEventListener('mouseenter', function () { setFocus(byId[id]); });
-  b.addEventListener('focus', function () { setFocus(byId[id]); });
-  menuEl.appendChild(b);
-});
-
-function layer(el, on) { el.inert = !on; el.setAttribute('aria-hidden', on ? 'false' : 'true'); }
-function sync() {
-  var c = body.classList, room = c.contains('room-open'), deckOpen = deck.classList.contains('open');
-  var away = c.contains('zoomed') || c.contains('dim') || room;
-  layer($('viewport'), !away);
-  layer(menuEl, !away);
-  layer(document.querySelector('.hud.top'), !room && !(c.contains('panel-open') && innerWidth <= 760));
-  layer(panel, c.contains('panel-open') && !room);
-  layer($('room'), room && !deckOpen);
-  layer(deck, deckOpen);
-}
-
-function setFocus(i) {
-  focusIdx = i;
-  spotsEl.querySelectorAll('.spot').forEach(function (e, n) { e.classList.toggle('focus', n === i); });
-  menuEl.querySelectorAll('button').forEach(function (b) { b.classList.toggle('focus', b.dataset.id === (SECTIONS[i] || {}).id); });
-}
-
-// Scale about the car, then slide it into view (left of the panel) without showing the photo's edges
-function aim(s, centred) {
-  var r = stage.getBoundingClientRect(), vw = innerWidth, vh = innerHeight;
-  var fx = s.x / 100, fy = s.y / 100;
-  var px = r.left + fx * r.width, py = r.top + fy * r.height;
-  var tx = (centred || vw <= 760 ? vw / 2 : (vw - panel.offsetWidth) / 2 + 20) - px, ty = vh * 0.55 - py;
-  tx = Math.min(tx, -(px - fx * r.width * s.z)); tx = Math.max(tx, vw - (px + (1 - fx) * r.width * s.z));
-  ty = Math.min(ty, -(py - fy * r.height * s.z)); ty = Math.max(ty, vh - (py + (1 - fy) * r.height * s.z));
-  cam.style.transformOrigin = s.x + '% ' + s.y + '%';
-  cam.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s.z + ')';
-}
-
-function fillPanel(s) {
-  panel.style.setProperty('--accent', s.c);
-  $('p-kicker').textContent = s.kicker;
-  $('p-title').textContent = s.title;
-  $('p-car').textContent = s.car;
-  $('p-stats').innerHTML = s.stats.map(function (t) { return '<div><b>' + t[0] + '</b><span>' + t[1] + '</span></div>'; }).join('');
-  $('p-stats').style.display = s.stats.length ? '' : 'none';
-  $('p-body').innerHTML = s.body;
-  $('p-scroll').scrollTop = 0;
-  var t = TOUR.indexOf(s.id);
-  $('p-prev').style.visibility = $('p-next').style.visibility = t < 0 ? 'hidden' : 'visible';
-  if (t >= 0) {
-    $('p-prev').textContent = '← ' + SECTIONS[byId[TOUR[(t - 1 + TOUR.length) % TOUR.length]]].title;
-    $('p-next').textContent = SECTIONS[byId[TOUR[(t + 1) % TOUR.length]]].title + ' →';
-  }
-}
-
-function enter(i) {
-  var s = SECTIONS[i];
-  setFocus(i);
-  openId = s.id;
-  body.classList.remove('dim');
-  body.classList.add('zoomed');
-  aim(s, s.room);
-  history.replaceState(null, '', '#' + s.id);
-  if (s.room) {
-    body.classList.remove('panel-open', 'has-closeup');
-    sync();
-    setTimeout(function () { if (openId === 'room') openRoom(); }, 900);
-    return;
-  }
-  var cu = $('closeup');
-  if (s.closeup) { cu.src = s.closeup; cu.alt = s.car; body.classList.add('has-closeup'); } else body.classList.remove('has-closeup');
-  fillPanel(s);
-  body.classList.add('panel-open');
-  sync();
-  setTimeout(function () { $('p-back').focus({ preventScroll: true }); }, 500);
-}
-
-function openContact() {
-  openId = 'contact';
-  fillPanel(CONTACT);
-  body.classList.add('dim', 'panel-open');
-  sync();
-  setTimeout(function () { $('p-back').focus({ preventScroll: true }); }, 500);
-}
-
-function leave() {
-  var was = openId;
-  openId = null;
-  body.classList.remove('zoomed', 'panel-open', 'dim', 'has-closeup', 'room-open');
-  sync();
-  cam.style.transform = '';
-  history.replaceState(null, '', location.pathname);
-  var i = byId[was];
-  if (i != null) spotsEl.children[i].focus({ preventScroll: true });
-  else if (was === 'contact') $('contact-btn').focus({ preventScroll: true });
-}
-
-function step(d) {
-  var t = TOUR.indexOf(openId);
-  if (t < 0) return;
-  enter(byId[TOUR[(t + d + TOUR.length) % TOUR.length]]);
-}
-
-$('p-back').addEventListener('click', leave);
-$('p-prev').addEventListener('click', function () { step(-1); });
-$('p-next').addEventListener('click', function () { step(1); });
-$('contact-btn').addEventListener('click', openContact);
-
-/* ---------- Listening room ---------- */
-var tt = $('tt'), deck = $('deck'), label = $('label');
-function openRoom() { body.classList.add('room-open'); sync(); $('room-close').focus({ preventScroll: true }); }
-$('room-close').addEventListener('click', leave);
-
-function toggleLid(force) {
-  var open = tt.classList.toggle('open', force);
-  tt.setAttribute('aria-label', open ? 'Close the record player' : 'Open the record player');
-}
-tt.addEventListener('click', function () { toggleLid(); });
-tt.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLid(); } });
-
-ALBUMS.forEach(function (a) {
-  var b = document.createElement('button');
-  b.className = 'sleeve-mini';
-  b.style.setProperty('--s', 'linear-gradient(145deg,' + a[2] + ', #1a1a1a)');
-  b.setAttribute('aria-label', 'Put on ' + a[0] + ' by ' + a[1]);
-  b.addEventListener('click', function () {
-    $('crate').querySelectorAll('.on').forEach(function (o) { o.classList.remove('on'); });
-    b.classList.add('on');
-    label.style.setProperty('--lbl', a[2]);
-    $('label-text').textContent = a[3];
-    $('now').innerHTML = '♪ Now spinning: <b>' + a[0] + '</b> · ' + a[1];
-    toggleLid(true);
-  });
-  $('crate').appendChild(b);
-});
-
-var tape = null, track = 0, playing = false, secs = 0, timer, lastSpine = null;
-TAPES.forEach(function (t, i) {
-  var b = document.createElement('button');
-  b.className = 'spine';
-  b.style.setProperty('--tape', t.tape);
-  b.innerHTML = '<span class="strip"></span><span class="lab"><b>' + t.title + '</b><span>Side B · ' + t.tracks.length + ' tracks</span></span>';
-  b.addEventListener('click', function () { lastSpine = b; insert(i); });
-  $('tapes').appendChild(b);
-});
-function insert(i) {
-  tape = TAPES[i]; track = 0; secs = 0;
-  deck.style.setProperty('--tape', tape.tape);
-  $('c-title').textContent = tape.title;
-  $('jcard').innerHTML = '<small>Side B · Adrien Pinilla</small><h3>' + tape.title + '</h3><ol class="tracks">' +
-    tape.tracks.map(function (tr, n) {
-      return '<li><span class="n">B' + (n + 1) + '</span><b>' + tr[0] + (tr[1] ? '<em>' + tr[1] + '</em>' : '') + '</b>' + (tr[2] ? '<p>' + tr[2] + '</p>' : '') + '</li>';
-    }).join('') + '</ol>';
-  deck.classList.add('open'); sync();
-  setPlaying(true); mark();
-  $('t-eject').focus({ preventScroll: true });
-}
-function mark() { $('jcard').querySelectorAll('.tracks li').forEach(function (li, n) { li.classList.toggle('now-playing', n === track); }); }
-function setPlaying(p) {
-  playing = p;
-  $('cassette').classList.toggle('playing', p);
-  $('t-play').textContent = p ? '⏸' : '▶';
-  clearInterval(timer);
-  if (p) timer = setInterval(function () { secs++; $('counter').textContent = String(secs).padStart(3, '0'); }, 1000);
-}
-function eject() { deck.classList.remove('open'); sync(); setPlaying(false); if (lastSpine) lastSpine.focus({ preventScroll: true }); }
-$('t-eject').addEventListener('click', eject);
-$('t-play').addEventListener('click', function () { setPlaying(!playing); });
-$('t-next').addEventListener('click', function () { track = Math.min(track + 1, tape.tracks.length - 1); mark(); });
-$('t-prev').addEventListener('click', function () { track = Math.max(track - 1, 0); mark(); });
-deck.addEventListener('click', function (e) { if (e.target === deck) eject(); });
-
-/* ---------- Keyboard ---------- */
-document.addEventListener('keydown', function (e) {
-  var k = e.key;
-  if (deck.classList.contains('open')) { if (k === 'Escape') eject(); return; }
-  if (body.classList.contains('room-open')) { if (k === 'Escape') leave(); return; }
-  if (openId) {
-    if (k === 'Escape' || (k.toLowerCase() === 'b' && !e.metaKey && !e.ctrlKey)) leave();
-    else if (k === 'ArrowRight') step(1);
-    else if (k === 'ArrowLeft') step(-1);
-    return;
-  }
-  var n = ORDER.length, o = ORDER.indexOf(focusIdx);
-  if (k === 'ArrowRight') { e.preventDefault(); setFocus(ORDER[(o + 1) % n]); }
-  else if (k === 'ArrowLeft') { e.preventDefault(); setFocus(ORDER[o < 0 ? n - 1 : (o - 1 + n) % n]); }
-  else if (k === 'Enter' && focusIdx >= 0 && (e.target === body || e.target.classList.contains('spot'))) { e.preventDefault(); enter(focusIdx); }
-});
-// On screens narrower than the photo, crop more from the right (staircase) than the left (the NSX)
-function fit() {
-  var extra = stage.offsetWidth - innerWidth;
-  stage.style.left = innerWidth > 760 && extra > 0 ? -Math.round(extra * 0.3) + 'px' : '0';
-}
-fit();
-addEventListener('resize', fit);
-addEventListener('resize', sync);
-addEventListener('resize', function () { if (openId && openId !== 'contact') aim(SECTIONS[byId[openId]], SECTIONS[byId[openId]].room); });
-
-/* ---------- Start: lights up, then a hint ---------- */
-var vp = $('viewport');
-function start() {
-  if (vp.scrollWidth > vp.clientWidth) vp.scrollLeft = (vp.scrollWidth - vp.clientWidth) * 0.4;
-  requestAnimationFrame(function () { body.classList.remove('boot'); });
-  var toast = $('toast');
-  toast.textContent = innerWidth <= 760 ? 'Tap a car · swipe to look around' : 'Click a car to explore';
-  setTimeout(function () { toast.classList.add('show'); }, 1600);
-  setTimeout(function () { toast.classList.remove('show'); }, 6000);
-  var deep = location.hash.slice(1);
-  if (deep === 'contact') setTimeout(openContact, 900);
-  else if (byId[deep] != null) setTimeout(function () { enter(byId[deep]); }, 900);
-}
-var img = $('photo');
-if (img.complete) start(); else { img.addEventListener('load', start); img.addEventListener('error', start); }
+<script type="importmap">
+{ "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }
 </script>
+<script type="module" src="garage.js"></script>
 </body>
 </html>
