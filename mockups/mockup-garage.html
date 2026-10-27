@@ -1,0 +1,424 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Garage Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0d0b09;
+  --ivory: #f1e9dc;
+  --muted: #b3a690;
+  --amber: #d9a45b;
+  --line: rgba(217, 164, 91, 0.18);
+  --accent: #d40000;
+  --serif: "Cormorant Garamond", Georgia, serif;
+  --sans: "Inter", -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; }
+body { background: var(--bg); color: var(--ivory); font: 400 15px/1.55 var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+
+/* ---------- Showroom backdrop ---------- */
+.scene {
+  position: relative; height: 100dvh; display: grid;
+  grid-template-rows: auto 1fr auto; grid-template-columns: minmax(0, 1fr);
+  background:
+    radial-gradient(ellipse 45% 40% at 50% 34%, rgba(217, 164, 91, 0.22), transparent 70%),
+    linear-gradient(180deg, #0a0807 0%, #15100c 58%, #0a0807 58.2%, #120d0a 100%);
+  overflow: hidden;
+}
+.scene::before { /* walnut slat wall, left */
+  content: ""; position: absolute; left: 0; top: 0; bottom: 42%; width: 30%;
+  background: repeating-linear-gradient(90deg, rgba(110, 70, 42, 0.35) 0 16px, rgba(0,0,0,.25) 16px 21px);
+  -webkit-mask-image: linear-gradient(90deg, #000 30%, transparent); mask-image: linear-gradient(90deg, #000 30%, transparent);
+}
+.scene::after { /* floor-to-ceiling window, right */
+  content: ""; position: absolute; right: 4%; top: 6%; bottom: 42%; width: 16%;
+  background:
+    linear-gradient(90deg, transparent 48%, #0a0807 48% 52%, transparent 52%),
+    linear-gradient(180deg, rgba(150, 175, 160, 0.10), rgba(150, 175, 160, 0.03));
+  border: 3px solid #0a0807; box-shadow: inset 0 0 40px rgba(150, 175, 160, 0.08);
+  opacity: .8;
+}
+.floor { /* herringbone-ish oak floor */
+  position: absolute; left: 0; right: 0; bottom: 0; height: 42%;
+  background:
+    repeating-linear-gradient(45deg, rgba(160, 110, 60, 0.07) 0 14px, transparent 14px 28px),
+    repeating-linear-gradient(-45deg, rgba(160, 110, 60, 0.05) 0 14px, transparent 14px 28px),
+    linear-gradient(180deg, #1a130d, #0c0907);
+  -webkit-mask-image: linear-gradient(180deg, transparent, #000 30%); mask-image: linear-gradient(180deg, transparent, #000 30%);
+}
+.pendant { position: absolute; top: 0; width: 1px; background: rgba(241, 233, 220, 0.2); z-index: 1; }
+.pendant::after {
+  content: ""; position: absolute; left: -9px; bottom: -18px; width: 19px; height: 20px; border-radius: 9px 9px 3px 3px;
+  background: radial-gradient(circle at 50% 70%, #ffe1ad, #d9a45b 55%, #6e4b22);
+  box-shadow: 0 8px 40px 12px rgba(217, 164, 91, 0.32);
+}
+
+/* ---------- HUD ---------- */
+.hud { position: relative; z-index: 5; display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; gap: 16px; }
+.brand { display: flex; align-items: center; gap: 14px; }
+.mono { font: 600 1.3rem/1 var(--serif); border: 1px solid var(--line); padding: 8px 10px 6px; letter-spacing: .06em; }
+.brand b { display: block; font: 600 1.05rem/1.1 var(--sans); letter-spacing: .02em; }
+.brand span { font-size: .72rem; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.hud-right { display: flex; gap: 10px; align-items: center; }
+.chip { font: 600 .72rem/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; padding: 9px 12px; border: 1px solid var(--line); background: rgba(13, 11, 9, 0.6); backdrop-filter: blur(6px); }
+.chip em { font-style: normal; color: var(--amber); margin-right: 6px; }
+a.chip, button.chip { color: var(--ivory); text-decoration: none; transition: border-color .2s, color .2s; }
+a.chip:hover, button.chip:hover { border-color: var(--amber); color: var(--amber); }
+
+/* ---------- Stage ---------- */
+.stage { position: relative; z-index: 2; display: grid; grid-template-columns: minmax(0, 1fr) 340px; align-items: center; padding: 0 28px; min-height: 0; }
+.car-area { position: relative; height: 100%; min-height: 260px; display: flex; align-items: center; justify-content: center; }
+.platform {
+  position: absolute; left: 50%; bottom: 14%; transform: translateX(-50%);
+  width: min(86%, 820px); aspect-ratio: 6 / 1; border-radius: 50%;
+  background: radial-gradient(ellipse at 50% 40%, rgba(217, 164, 91, 0.22), rgba(20, 15, 11, 0.9) 60%, transparent 72%);
+  box-shadow: 0 0 0 1px rgba(217, 164, 91, 0.25), 0 0 60px rgba(217, 164, 91, 0.12);
+}
+.platform::after { content: ""; position: absolute; inset: 9%; border-radius: 50%; border: 1px dashed rgba(217, 164, 91, 0.22); animation: turn 30s linear infinite; }
+@keyframes turn { to { transform: rotate(360deg); } }
+.slot { position: absolute; left: 50%; bottom: 15%; width: min(84%, 800px); transform: translateX(-50%); aspect-ratio: 600 / 200; }
+.slot svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.car .wheel { transform-box: fill-box; transform-origin: center; }
+.car .head { transition: opacity .2s; opacity: .7; }
+.car.flash .head { animation: flash .5s 2; }
+.car.flash { animation: rev .5s ease-in-out; }
+@keyframes flash { 50% { opacity: 1; filter: drop-shadow(0 0 18px #fff4d6); } }
+@keyframes rev { 20%, 60% { transform: translateX(-2px) rotate(-.3deg); } 40%, 80% { transform: translateX(2px) rotate(.3deg); } }
+.arrow {
+  position: absolute; top: 50%; transform: translateY(-50%); z-index: 3;
+  width: 48px; height: 48px; border: 1px solid var(--line); background: rgba(13, 11, 9, 0.6);
+  display: grid; place-items: center; font-size: 1.2rem; transition: border-color .2s, color .2s;
+}
+.arrow:hover { border-color: var(--amber); color: var(--amber); }
+.arrow.prev { left: 0; } .arrow.next { right: 0; }
+
+/* ---------- Spec card ---------- */
+.spec { background: linear-gradient(180deg, rgba(27, 22, 18, 0.88), rgba(17, 13, 10, 0.92)); border: 1px solid var(--line); padding: 24px; position: relative; backdrop-filter: blur(8px); }
+.spec::before { content: ""; position: absolute; left: 0; top: 0; bottom: 0; width: 3px; background: var(--accent); transition: background .4s; }
+.spec .badge { display: inline-flex; align-items: center; gap: 8px; font: 700 .7rem/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; }
+.badge i { font-style: normal; background: var(--accent); color: #fff; padding: 5px 8px; transition: background .4s; }
+.spec h1 { font: 600 2.6rem/1 var(--serif); margin: 14px 0 6px; }
+.spec .car-name { font-size: .85rem; color: var(--muted); }
+.spec .car-name b { color: var(--ivory); font-weight: 500; }
+.specs { list-style: none; margin: 20px 0 22px; display: grid; gap: 12px; }
+.specs li { display: grid; grid-template-columns: 1fr auto; gap: 4px 12px; font-size: .78rem; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); }
+.specs li b { color: var(--ivory); font: 600 .95rem/1 var(--sans); letter-spacing: 0; text-transform: none; }
+.bar { grid-column: 1 / -1; height: 4px; background: rgba(241, 233, 220, 0.1); position: relative; overflow: hidden; }
+.bar span { position: absolute; inset: 0 auto 0 0; background: var(--accent); width: 0; transition: width .9s cubic-bezier(.2, .8, .2, 1); }
+.explore { width: 100%; padding: 14px; background: var(--accent); color: #fff; font: 600 .82rem/1 var(--sans); letter-spacing: .18em; text-transform: uppercase; display: flex; justify-content: space-between; align-items: center; transition: filter .2s, background .4s; }
+.explore:hover { filter: brightness(1.12); }
+.explore kbd { font: 600 .66rem/1 var(--sans); border: 1px solid rgba(255,255,255,.5); padding: 4px 6px; border-radius: 3px; }
+.fade { animation: fadeIn .5s ease; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(6px); } }
+
+/* ---------- Car select row ---------- */
+.dock { position: relative; z-index: 3; padding: 0 28px 20px; }
+.hint { font-size: .7rem; letter-spacing: .16em; text-transform: uppercase; color: var(--muted); margin-bottom: 10px; display: flex; justify-content: space-between; }
+.row { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; }
+.thumb { position: relative; text-align: left; padding: 12px 14px 12px; border: 1px solid var(--line); background: rgba(20, 16, 12, 0.75); transition: border-color .2s, background .2s, transform .2s; overflow: hidden; }
+.thumb:hover { transform: translateY(-2px); border-color: rgba(217, 164, 91, 0.4); }
+.thumb.active { border-color: var(--c); background: rgba(30, 24, 19, 0.95); }
+.thumb.active::after { content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 3px; background: var(--c); }
+.thumb svg { width: 100%; height: 38px; display: block; margin-bottom: 6px; }
+.thumb small { display: block; font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); }
+.thumb strong { font: 600 1.05rem/1.2 var(--serif); }
+
+/* ---------- Drawer ---------- */
+.veil { position: fixed; inset: 0; z-index: 20; background: rgba(5, 4, 3, 0.55); opacity: 0; pointer-events: none; transition: opacity .35s; }
+.drawer {
+  position: fixed; z-index: 21; top: 0; right: 0; height: 100dvh; width: min(560px, 100%);
+  background: linear-gradient(180deg, #1b1612, #120e0b); border-left: 1px solid var(--line);
+  transform: translateX(100%); transition: transform .5s cubic-bezier(.2, .8, .2, 1);
+  display: flex; flex-direction: column;
+}
+.open .veil { opacity: 1; pointer-events: auto; }
+.open .drawer { transform: none; }
+.drawer header { padding: 24px 28px 18px; border-bottom: 1px solid var(--line); display: flex; justify-content: space-between; align-items: start; gap: 12px; }
+.drawer header small { font-size: .68rem; letter-spacing: .2em; text-transform: uppercase; color: var(--amber); }
+.drawer header h2 { font: 600 2.2rem/1.05 var(--serif); margin-top: 6px; }
+.close { border: 1px solid var(--line); padding: 8px 10px; font-size: .72rem; letter-spacing: .14em; text-transform: uppercase; flex: none; }
+.close:hover { border-color: var(--amber); color: var(--amber); }
+.drawer .body { padding: 22px 28px 40px; overflow-y: auto; }
+.blk { padding: 18px 0; border-bottom: 1px solid var(--line); }
+.blk:last-child { border-bottom: 0; }
+.blk h3 { font: 600 1.45rem/1.15 var(--serif); }
+.blk .meta { font-size: .78rem; color: var(--muted); margin-top: 2px; }
+.blk p, .blk li { color: #d9cfbf; font-size: .92rem; margin-top: 8px; }
+.blk ul { list-style: none; }
+.blk li { padding-left: 16px; position: relative; }
+.blk li::before { content: ""; position: absolute; left: 0; top: .7em; width: 7px; height: 1px; background: var(--amber); }
+.blk .res { color: var(--ivory); font-weight: 500; }
+.blk .res::before { content: "Result  "; color: var(--amber); font-size: .68rem; letter-spacing: .18em; text-transform: uppercase; font-weight: 600; }
+.tags { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+.tags span { font-size: .76rem; padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; color: #d9cfbf; }
+.nums { display: flex; gap: 22px; margin-top: 12px; flex-wrap: wrap; }
+.nums b { display: block; font: 600 1.6rem/1 var(--serif); }
+.nums span { font-size: .72rem; color: var(--muted); }
+.cta { display: inline-block; margin-top: 14px; margin-right: 8px; padding: 12px 18px; background: var(--accent); color: #fff; text-decoration: none; font-weight: 500; font-size: .88rem; }
+.cta.ghost { background: none; border: 1px solid var(--line); color: var(--ivory); }
+
+.mock-tag { position: fixed; left: 50%; bottom: 6px; transform: translateX(-50%); z-index: 30; font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(179, 166, 144, 0.5); pointer-events: none; }
+
+/* ---------- Mobile ---------- */
+@media (max-width: 860px) {
+  body { overflow: auto; }
+  .scene { height: auto; min-height: 100dvh; }
+  .hud { padding: 14px 16px; }
+  .chip.hide-sm, .brand span { display: none; }
+  .stage { grid-template-columns: minmax(0, 1fr); padding: 0 16px; gap: 8px; }
+  .car-area { height: 46vw; min-height: 190px; }
+  .slot { width: 92%; bottom: 10%; }
+  .platform { width: 96%; bottom: 8%; }
+  .arrow { width: 38px; height: 38px; top: auto; bottom: -6px; transform: none; }
+  .spec { padding: 18px; }
+  .spec h1 { font-size: 2.1rem; }
+  .specs { margin: 14px 0 16px; }
+  .dock { padding: 16px 16px 28px; }
+  .row { display: flex; overflow-x: auto; gap: 8px; margin: 0 -16px; padding: 0 16px; scrollbar-width: none; }
+  .row::-webkit-scrollbar { display: none; }
+  .thumb { flex: 0 0 132px; }
+  .hint .keys { display: none; }
+  .drawer header, .drawer .body { padding-left: 18px; padding-right: 18px; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+
+<svg width="0" height="0" style="position:absolute" aria-hidden="true">
+  <defs>
+    <radialGradient id="rimg" cx=".4" cy=".35" r=".8"><stop offset="0" stop-color="#e6e9ec"/><stop offset="1" stop-color="#6c727a"/></radialGradient>
+    <symbol id="wheel" viewBox="-30 -30 60 60">
+      <circle r="29" fill="#0b0b0c"/>
+      <circle r="27" fill="none" stroke="#1d1d20" stroke-width="2"/>
+      <circle r="20" fill="#1a1b1e"/>
+      <g stroke="url(#rimg)" stroke-width="3.6" stroke-linecap="round">
+        <line x1="0" y1="-4" x2="0" y2="-19"/><line x1="3.8" y1="-1.2" x2="18" y2="-5.9"/>
+        <line x1="2.4" y1="3.2" x2="11.2" y2="15.4"/><line x1="-2.4" y1="3.2" x2="-11.2" y2="15.4"/>
+        <line x1="-3.8" y1="-1.2" x2="-18" y2="-5.9"/>
+      </g>
+      <circle r="20" fill="none" stroke="url(#rimg)" stroke-width="1.6"/>
+      <circle r="4" fill="url(#rimg)"/>
+    </symbol>
+  </defs>
+</svg>
+
+<div class="scene" id="scene">
+  <div class="floor"></div>
+  <span class="pendant" style="left:30%;height:9vh"></span>
+  <span class="pendant" style="left:50%;height:5vh"></span>
+  <span class="pendant" style="left:70%;height:11vh"></span>
+
+  <header class="hud">
+    <div class="brand">
+      <span class="mono">AP</span>
+      <div><b>ADRIEN PINILLA</b><span>NYU Stern ’27 · The Garage</span></div>
+    </div>
+    <div class="hud-right">
+      <span class="chip hide-sm"><em>CR</em>$30K+ earned</span>
+      <a class="chip hide-sm" href="mockup-records.html">Mezzanine ↗</a>
+      <button class="chip" data-open="contact">Contact</button>
+    </div>
+  </header>
+
+  <main class="stage">
+    <div class="car-area">
+      <div class="platform"></div>
+      <div class="slot" id="slot"></div>
+      <button class="arrow prev" id="prev" aria-label="Previous car">←</button>
+      <button class="arrow next" id="next" aria-label="Next car">→</button>
+    </div>
+    <aside class="spec" id="spec" aria-live="polite"></aside>
+  </main>
+
+  <div class="dock">
+    <p class="hint"><span>Select a car</span><span class="keys">← → browse · Enter explore · Esc close</span></p>
+    <div class="row" id="row"></div>
+  </div>
+</div>
+
+<div class="veil" id="veil"></div>
+<aside class="drawer" id="drawer" aria-hidden="true">
+  <header><div><small id="d-kicker"></small><h2 id="d-title"></h2></div><button class="close" id="close">Esc ✕</button></header>
+  <div class="body" id="d-body"></div>
+</aside>
+
+<p class="mock-tag">Mockup · Concept A</p>
+
+<script>
+var CARS = [
+  {
+    key: 'sls', chapter: 'I', section: 'Education', car: 'Mercedes-Benz SLS AMG', paint: 'Iridium Silver',
+    c: '#c9cdd2', c1: '#f2f4f6', c2: '#8d939b', c3: '#3d4146', wheels: [140, 480],
+    body: 'M42,124 C34,114 36,100 46,94 C70,88 110,84 150,80 C190,70 216,56 250,50 C272,46 300,46 316,50 C334,56 350,68 366,78 C420,84 500,88 548,94 C570,98 578,108 574,120 L568,126 L516,122 A36,36 0 0 0 444,122 L176,122 A36,36 0 0 0 104,122 Z',
+    glass: 'M206,78 C224,64 244,56 264,54 L310,54 C324,60 336,68 346,78 Z',
+    extra: '<path d="M268,48 L246,8 C262,0 292,-4 310,0 L316,46" fill="url(#P)" stroke="rgba(255,255,255,.4)" stroke-width="1.2" opacity=".9"/><path d="M252,10 C266,4 290,2 306,4 L311,40 L272,44 Z" fill="#0d1014" opacity=".85"/>',
+    head: '<ellipse class="head" cx="566" cy="104" rx="6" ry="3.5" fill="#fff4d6"/>',
+    tail: '<rect x="40" y="99" width="9" height="6" rx="2" fill="#ff2b2b"/>',
+    specs: [['GPA', '3.68 / 4.00', 92], ['Rush rank', '#1 of 120+', 99], ['Majors', 'Stern + Wagner']],
+    content:
+      '<div class="blk"><h3>New York University</h3><p class="meta">Expected Dec 2027 · GPA 3.68 / 4.00</p><ul><li>B.S. in Business, Technology &amp; Entrepreneurship, Stern</li><li>B.A. in Public Policy (double major), Wagner</li></ul><div class="tags"><span>Strategic Management</span><span>Finance</span><span>Financial Accounting</span><span>Decision Models &amp; Analytics</span><span>Statistics</span><span>Economics</span></div></div>' +
+      '<div class="blk"><h3>Beta Alpha Psi</h3><p class="meta">Mu Chapter · Platinum Member · Community Service Chair</p><ul><li>Ranked #1 of 120+ candidates; Candidate of the Semester</li><li>Run community service events for ~115 members this semester</li></ul></div>' +
+      '<div class="blk"><h3>Chaminade High School</h3><p class="meta">Mineola, NY · 2024</p><p>4.0 unweighted GPA · four-year Honor Roll · Excellence of Character Award</p></div>'
+  },
+  {
+    key: 'f488', chapter: 'II', section: 'Experience', car: 'Ferrari 488 GTB', paint: 'Rosso Corsa',
+    c: '#d40000', c1: '#ff4a3a', c2: '#c00000', c3: '#4a0000', wheels: [130, 470],
+    body: 'M44,126 C34,118 34,102 44,94 L150,86 C196,80 236,58 284,52 C318,48 348,48 366,52 C400,60 428,76 456,84 C500,92 548,96 564,104 C574,110 574,120 566,126 L506,122 A36,36 0 0 0 434,122 L166,122 A36,36 0 0 0 94,122 L58,126 Z',
+    glass: 'M236,80 C262,66 282,58 300,57 L352,57 C378,62 404,74 424,82 Z',
+    extra: '<path d="M300,92 C270,96 242,104 214,112 L250,112 C268,104 286,98 300,92 Z" fill="#1a0000" opacity=".7"/>',
+    head: '<ellipse class="head" cx="560" cy="103" rx="7" ry="3" fill="#fff4d6"/>',
+    tail: '<rect x="38" y="98" width="10" height="7" rx="3" fill="#ff2b2b"/>',
+    calipers: '#f2c230',
+    specs: [['Selectivity', '80 of 700+', 89], ['Roles', 'EY · Fulton · Arête'], ['Design shipped', 'Adopted by Arête']],
+    content:
+      '<div class="blk"><h3>EY · Future Bridge Program</h3><p class="meta">May – Aug 2026 · New York</p><p>12-week program on consulting and business strategy. Worked a coffee-company case with my team.</p><p class="res">Presented recommendations to EY professionals; one of ~80 chosen from 700+.</p></div>' +
+      '<div class="blk"><h3>Fulton · Brand Strategy Consultant</h3><p class="meta">Jan – May 2026 · NYU Stern client project</p><p>Team of 4. Ran a few dozen consumer interviews and built an ideal-customer persona for an insole brand moving into slippers.</p><p class="res">Recommended an outdoor slipper to rival Birkenstock. It’s now on sale.</p></div>' +
+      '<div class="blk"><h3>Arête · User Interface Intern</h3><p class="meta">Sept – Nov 2024</p><p>Redesigned the homepage and UI of a marketplace for emerging fashion designers, prototyped in Figma.</p><p class="res">Arête adopted the redesign.</p></div>'
+  },
+  {
+    key: 'c8', chapter: 'III', section: 'Projects', car: 'Chevrolet Corvette C8', paint: 'Rapid Blue',
+    c: '#1f6fe0', c1: '#4f9bff', c2: '#1757c4', c3: '#0a2252', wheels: [130, 470],
+    body: 'M38,124 L34,98 L42,86 L62,82 L172,78 L214,68 L270,52 L332,48 L360,52 L430,80 L520,92 L560,100 L574,112 L568,126 L506,122 A36,36 0 0 0 434,122 L166,122 A36,36 0 0 0 94,122 L56,126 Z',
+    glass: 'M226,76 L272,58 L330,54 L354,57 L410,78 Z',
+    extra: '<path d="M246,106 L298,92 L330,96 L300,110 Z" fill="#06122b" opacity=".8"/>',
+    head: '<path class="head" d="M552,100 L568,104 L560,106 Z" fill="#fff4d6"/>',
+    tail: '<rect x="36" y="90" width="14" height="5" rx="1" fill="#ff2b2b"/>',
+    calipers: '#e8e8e8',
+    specs: [['Revenue', '$30K+'], ['Customers', '450+'], ['Seller rating', '4.8★+', 96]],
+    content:
+      '<div class="blk"><h3>Online Collectibles Business</h3><p class="meta">Founder · 2020 – Present</p><p>Resell Pokémon cards and Funko figures on eBay, TCGplayer and Mercari, with pricing, inventory, fulfillment and customer service all handled by me.</p><div class="nums"><div><b>$30K+</b><span>Revenue</span></div><div><b>450+</b><span>Customers</span></div><div><b>4.8★+</b><span>Rating</span></div></div></div>' +
+      '<div class="blk"><h3>Astoria Real Estate Analysis</h3><p class="meta">Independent study · May – Jul 2026</p><p>Screened a few dozen multifamily and mixed-use properties (under 6 units), modeling NOI, cap rates, leverage and cash-on-cash returns.</p><div class="nums"><div><b>$1.8M–$4M</b><span>Price range</span></div><div><b>2.5–5%</b><span>Cap rates</span></div></div></div>'
+  },
+  {
+    key: 'nsx', chapter: 'IV', section: 'Skills', car: 'Acura NSX Type S', paint: 'Valencia Red Pearl',
+    c: '#b3101e', c1: '#e3304a', c2: '#a00c1c', c3: '#3a0309', wheels: [130, 470],
+    body: 'M38,124 L34,104 L44,92 L54,88 L160,86 L206,74 L262,56 L330,52 L362,56 L440,84 L520,94 L560,102 L574,114 L566,126 L506,122 A36,36 0 0 0 434,122 L166,122 A36,36 0 0 0 94,122 L58,126 Z',
+    glass: 'M222,82 L266,62 L328,58 L356,61 L414,80 Z',
+    extra: '<path d="M280,96 L332,90 L300,112 Z" fill="#160106" opacity=".8"/><path d="M540,118 L576,118" stroke="#111" stroke-width="4"/>',
+    head: '<path class="head" d="M548,101 L566,106 L556,108 Z" fill="#fff4d6"/>',
+    tail: '<rect x="36" y="96" width="12" height="4" rx="1" fill="#ff2b2b"/>',
+    calipers: '#d40000',
+    specs: [['Finance', 'Excel · Bloomberg'], ['Strategy', 'Interviews · Personas'], ['Design', 'Figma']],
+    content:
+      '<div class="blk"><h3>Finance &amp; Analysis</h3><div class="tags"><span>Excel</span><span>Bloomberg Terminal</span><span>Minitab</span><span>NOI &amp; cap rates</span><span>Cash-on-cash</span><span>Scenario analysis</span></div></div>' +
+      '<div class="blk"><h3>Strategy &amp; Research</h3><div class="tags"><span>Consumer interviews</span><span>Personas</span><span>Brand positioning</span><span>Case structuring</span><span>Presenting</span></div></div>' +
+      '<div class="blk"><h3>Design &amp; Operations</h3><div class="tags"><span>Figma</span><span>UI prototyping</span><span>Pricing</span><span>Inventory</span><span>Fulfillment</span></div></div>' +
+      '<div class="blk"><p>Also: Microsoft Office · Python &amp; SQL (basic) · PC building · Spanish (elementary). And yes, the NSX is my favorite car.</p></div>'
+  }
+];
+var CONTACT = {
+  kicker: 'Pit lane', title: 'Get in touch',
+  content: '<div class="blk"><p>Open to internships and opportunities in wealth management, consulting, finance and hospitality.</p><a class="cta" href="mailto:awp6745@stern.nyu.edu">awp6745@stern.nyu.edu</a><a class="cta ghost" href="https://www.linkedin.com/in/adrien-pinilla-24b01630a/" target="_blank" rel="noopener">LinkedIn ↗</a></div>'
+};
+
+var uid = 0;
+function carSVG(c, mini) {
+  var id = 'P' + (++uid);
+  var wheels = c.wheels.map(function (x) {
+    var cal = c.calipers && !mini ? '<path d="M' + (x - 18) + ',108 A20,20 0 0 1 ' + (x - 6) + ',99" stroke="' + c.calipers + '" stroke-width="5" fill="none" stroke-linecap="round"/>' : '';
+    return '<use href="#wheel" class="wheel" x="' + (x - 30) + '" y="90" width="60" height="60"/>' + cal;
+  }).join('');
+  var extra = (c.extra || '').replace(/url\(#P\)/g, 'url(#' + id + ')');
+  return '<svg class="car" viewBox="0 -20 600 200" aria-hidden="true">' +
+    '<defs><linearGradient id="' + id + '" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="' + c.c1 + '"/><stop offset=".55" stop-color="' + c.c2 + '"/><stop offset="1" stop-color="' + c.c3 + '"/></linearGradient></defs>' +
+    (mini ? '' : '<ellipse cx="300" cy="150" rx="260" ry="9" fill="rgba(0,0,0,.7)" style="filter:blur(4px)"/>') +
+    extra +
+    '<path d="' + c.body + '" fill="url(#' + id + ')" stroke="rgba(255,255,255,.35)" stroke-width="1.2" stroke-linejoin="round"/>' +
+    (mini ? '' : '<path d="M70,98 C200,92 400,92 556,106" stroke="rgba(255,255,255,.28)" stroke-width="1.6" fill="none"/>') +
+    '<path d="' + c.glass + '" fill="#0d1014"/>' +
+    (mini ? '' : '<path d="' + c.glass + '" fill="url(#glassShine)" opacity=".5"/>') +
+    (mini ? '' : c.head + c.tail) + wheels + '</svg>';
+}
+
+var slot = document.getElementById('slot'), spec = document.getElementById('spec'), row = document.getElementById('row');
+var idx = 1, busy = false;
+var EASE = 'cubic-bezier(.2,.8,.2,1)';
+
+// glass reflection gradient (shared)
+document.querySelector('svg defs').insertAdjacentHTML('beforeend',
+  '<linearGradient id="glassShine" x1="0" y1="0" x2="1" y2="1"><stop offset=".3" stop-color="#fff" stop-opacity="0"/><stop offset=".45" stop-color="#fff" stop-opacity=".35"/><stop offset=".6" stop-color="#fff" stop-opacity="0"/></linearGradient>');
+
+CARS.forEach(function (c, i) {
+  var b = document.createElement('button');
+  b.className = 'thumb'; b.style.setProperty('--c', c.c);
+  b.innerHTML = carSVG(c, true) + '<small>Chapter ' + c.chapter + '</small><strong>' + c.section + '</strong>';
+  b.addEventListener('click', function () { if (i === idx) openDrawer(); else show(i, i > idx ? 1 : -1); });
+  row.appendChild(b);
+});
+
+function renderSpec(c) {
+  document.documentElement.style.setProperty('--accent', c.c);
+  spec.innerHTML =
+    '<div class="fade"><span class="badge"><i>' + c.chapter + '</i>Chapter ' + c.chapter + '</span>' +
+    '<h1>' + c.section + '</h1><p class="car-name"><b>' + c.car + '</b> · ' + c.paint + '</p>' +
+    '<ul class="specs">' + c.specs.map(function (s) {
+      return '<li>' + s[0] + '<b>' + s[1] + '</b>' + (s[2] ? '<span class="bar"><span data-w="' + s[2] + '"></span></span>' : '') + '</li>';
+    }).join('') + '</ul>' +
+    '<button class="explore" id="explore">Explore ' + c.section + ' <kbd>Enter</kbd></button></div>';
+  requestAnimationFrame(function () {
+    spec.querySelectorAll('.bar span').forEach(function (s) { s.style.width = s.dataset.w + '%'; });
+  });
+  document.getElementById('explore').addEventListener('click', openDrawer);
+  row.querySelectorAll('.thumb').forEach(function (t, i) { t.classList.toggle('active', i === idx); });
+}
+
+// Each car drives in from the left and the previous one drives off to the right
+function show(i, dir) {
+  if (busy) return;
+  busy = true;
+  var old = slot.querySelector('svg');
+  idx = (i + CARS.length) % CARS.length;
+  var c = CARS[idx];
+  slot.insertAdjacentHTML('beforeend', carSVG(c));
+  var el = slot.lastElementChild;
+  var from = dir < 0 ? '130%' : '-130%', to = dir < 0 ? '-130%' : '130%';
+  var spinIn = dir < 0 ? ['rotate(720deg)', 'rotate(0)'] : ['rotate(-720deg)', 'rotate(0)'];
+  el.animate([{ transform: 'translateX(' + from + ')' }, { transform: 'none' }], { duration: 1000, easing: EASE });
+  el.querySelectorAll('.wheel').forEach(function (w) { w.animate([{ transform: spinIn[0] }, { transform: spinIn[1] }], { duration: 1000, easing: EASE }); });
+  if (old) {
+    var a = old.animate([{ transform: 'none' }, { transform: 'translateX(' + to + ')' }], { duration: 700, easing: 'cubic-bezier(.5,0,.8,.4)', fill: 'forwards' });
+    old.querySelectorAll('.wheel').forEach(function (w) { w.animate([{ transform: 'rotate(0)' }, { transform: dir < 0 ? 'rotate(-540deg)' : 'rotate(540deg)' }], { duration: 700, easing: 'cubic-bezier(.5,0,.8,.4)', fill: 'forwards' }); });
+    a.onfinish = function () { old.remove(); };
+  }
+  renderSpec(c);
+  setTimeout(function () { busy = false; }, 650);
+}
+
+var body = document.body, drawer = document.getElementById('drawer');
+function openDrawer(which) {
+  var d = which === 'contact' ? CONTACT : { kicker: 'Chapter ' + CARS[idx].chapter + ' · ' + CARS[idx].car, title: CARS[idx].section, content: CARS[idx].content };
+  var car = slot.querySelector('svg:last-child');
+  if (which !== 'contact' && car) { car.classList.remove('flash'); void car.getBoundingClientRect(); car.classList.add('flash'); }
+  document.getElementById('d-kicker').textContent = d.kicker;
+  document.getElementById('d-title').textContent = d.title;
+  document.getElementById('d-body').innerHTML = d.content;
+  setTimeout(function () { body.classList.add('open'); drawer.setAttribute('aria-hidden', 'false'); document.getElementById('close').focus(); }, which === 'contact' ? 0 : 450);
+}
+function closeDrawer() { body.classList.remove('open'); drawer.setAttribute('aria-hidden', 'true'); }
+
+document.getElementById('prev').addEventListener('click', function () { show(idx - 1, -1); });
+document.getElementById('next').addEventListener('click', function () { show(idx + 1, 1); });
+document.getElementById('close').addEventListener('click', closeDrawer);
+document.getElementById('veil').addEventListener('click', closeDrawer);
+document.querySelector('[data-open="contact"]').addEventListener('click', function () { openDrawer('contact'); });
+document.addEventListener('keydown', function (e) {
+  if (body.classList.contains('open')) { if (e.key === 'Escape') closeDrawer(); return; }
+  if (e.key === 'ArrowRight') show(idx + 1, 1);
+  else if (e.key === 'ArrowLeft') show(idx - 1, -1);
+  else if (e.key === 'Enter' && e.target === document.body) openDrawer();
+});
+
+show(idx, 1);
+</script>
+</body>
+</html>

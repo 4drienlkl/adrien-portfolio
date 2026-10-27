@@ -1,0 +1,383 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Listening Room Mockup</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Caveat:wght@600&family=Cormorant+Garamond:ital,wght@0,500;0,600;1,500&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --bg: #0d0b09;
+  --ivory: #f1e9dc;
+  --muted: #b3a690;
+  --amber: #d9a45b;
+  --line: rgba(217, 164, 91, 0.18);
+  --paper: #efe6d2;
+  --serif: "Cormorant Garamond", Georgia, serif;
+  --sans: "Inter", -apple-system, "Segoe UI", sans-serif;
+  --hand: "Caveat", "Bradley Hand", cursive;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+body { background: var(--bg); color: var(--ivory); font: 400 15px/1.55 var(--sans); -webkit-font-smoothing: antialiased; min-height: 100dvh; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--amber); outline-offset: 3px; border-radius: 4px; }
+
+.room {
+  min-height: 100dvh; position: relative; overflow: hidden;
+  background:
+    radial-gradient(ellipse 50% 45% at 40% 20%, rgba(217, 164, 91, 0.16), transparent 70%),
+    repeating-linear-gradient(90deg, rgba(110, 70, 42, 0.16) 0 18px, rgba(0, 0, 0, 0.18) 18px 23px),
+    #120d0a;
+  display: grid; grid-template-rows: auto 1fr;
+}
+.top { display: flex; justify-content: space-between; align-items: center; padding: 18px 28px; position: relative; z-index: 2; }
+.top a { color: var(--ivory); text-decoration: none; font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; border: 1px solid var(--line); padding: 9px 12px; background: rgba(13, 11, 9, .6); }
+.top a:hover { color: var(--amber); border-color: var(--amber); }
+.title small { display: block; font-size: .7rem; letter-spacing: .22em; text-transform: uppercase; color: var(--amber); }
+.title h1 { font: 600 2rem/1 var(--serif); }
+
+.console-wrap { display: flex; align-items: flex-end; justify-content: center; padding: 10px 28px 0; }
+.console {
+  width: min(1100px, 100%);
+  display: grid; grid-template-columns: auto 1fr auto; gap: 36px; align-items: end;
+  padding: 0 32px 34px; position: relative;
+}
+.console::after { /* walnut sideboard top */
+  content: ""; position: absolute; left: 0; right: 0; bottom: 0; height: 34px;
+  background: linear-gradient(180deg, #6b4428, #3b2618 40%, #22160e);
+  border-radius: 3px; box-shadow: 0 30px 60px rgba(0, 0, 0, .7);
+}
+
+/* ---------- Turntable ---------- */
+.deck-col { position: relative; z-index: 1; }
+.tt {
+  position: relative; width: 380px; height: 300px; border-radius: 10px;
+  background: linear-gradient(145deg, #7a4d2c, #4a2e1a 55%, #2f1d11);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, .15), 0 18px 30px rgba(0, 0, 0, .55);
+  perspective: 900px; cursor: pointer;
+}
+.platter { position: absolute; left: 24px; top: 25px; width: 250px; height: 250px; border-radius: 50%; background: radial-gradient(circle, #555 0 60%, #9a9a9a 61% 63%, #3a3a3a 64%); box-shadow: 0 4px 12px rgba(0,0,0,.6); }
+.vinyl {
+  position: absolute; inset: 7px; border-radius: 50%;
+  background:
+    radial-gradient(circle, transparent 0 17%, rgba(0,0,0,0) 17%),
+    repeating-radial-gradient(circle, #101010 0 1.5px, #1d1d1d 1.5px 3px);
+  box-shadow: inset 0 0 0 1px #000;
+}
+.vinyl::before { content: ""; position: absolute; inset: 0; border-radius: 50%; background: conic-gradient(from 20deg, transparent 0 10%, rgba(255,255,255,.12) 14%, transparent 20% 60%, rgba(255,255,255,.08) 64%, transparent 70%); }
+.label {
+  position: absolute; left: 50%; top: 50%; width: 84px; height: 84px; margin: -42px 0 0 -42px; border-radius: 50%;
+  background: var(--lbl, #d40000); display: grid; place-items: center; text-align: center;
+  font: 600 .6rem/1.15 var(--sans); letter-spacing: .08em; text-transform: uppercase; color: #fff; padding: 10px;
+  transition: background .4s;
+}
+.label::after { content: ""; position: absolute; width: 7px; height: 7px; border-radius: 50%; background: #ddd; }
+.label span { transform: translateY(-14px); }
+.spin { animation: spin 1.8s linear infinite; }
+.vinyl.spin-anim { animation: spin 1.8s linear infinite; }
+@keyframes spin { to { transform: rotate(360deg); } }
+.arm {
+  position: absolute; right: 44px; top: 34px; width: 14px; height: 210px;
+  transform-origin: 7px 7px; transform: rotate(4deg); transition: transform 1s cubic-bezier(.3, .7, .3, 1) .5s;
+}
+.arm::before { content: ""; position: absolute; left: -10px; top: -10px; width: 34px; height: 34px; border-radius: 50%; background: radial-gradient(circle, #d8d8d8, #6d6d6d); box-shadow: 0 3px 6px rgba(0,0,0,.6); }
+.arm::after { content: ""; position: absolute; left: 5px; top: 10px; width: 4px; height: 190px; background: linear-gradient(90deg, #8a8a8a, #e5e5e5, #8a8a8a); border-radius: 2px; }
+.arm i { position: absolute; left: -2px; bottom: -6px; width: 18px; height: 24px; background: #222; border-radius: 2px; transform: rotate(-18deg); box-shadow: 0 2px 4px rgba(0,0,0,.6); }
+.knob { position: absolute; width: 22px; height: 22px; border-radius: 50%; background: radial-gradient(circle at 40% 35%, #eee, #777); box-shadow: 0 2px 4px rgba(0,0,0,.6); }
+.speed { position: absolute; left: 290px; bottom: 22px; font: 600 .6rem/1 var(--sans); letter-spacing: .1em; color: rgba(241,233,220,.55); }
+.cover {
+  position: absolute; inset: -6px; border-radius: 12px;
+  background: linear-gradient(160deg, rgba(60, 60, 66, .55), rgba(20, 20, 24, .7));
+  border: 1px solid rgba(255, 255, 255, .14);
+  transform-origin: 50% 0; transition: transform 1s cubic-bezier(.3, .7, .3, 1), opacity 1s;
+  display: grid; place-items: center;
+  box-shadow: inset 0 0 40px rgba(255,255,255,.05);
+}
+.cover::before { content: ""; position: absolute; inset: 0; border-radius: 12px; background: linear-gradient(115deg, transparent 30%, rgba(255,255,255,.12) 42%, transparent 52%); }
+.cover span { font: 600 .72rem/1 var(--sans); letter-spacing: .22em; text-transform: uppercase; color: var(--ivory); background: rgba(13,11,9,.6); padding: 10px 14px; border: 1px solid var(--line); }
+.tt.open .cover { transform: rotateX(82deg); opacity: .35; }
+.tt.open .arm { transform: rotate(26deg); }
+.tt.open .vinyl { animation: spin 1.8s linear infinite 1.2s; }
+
+.crate { display: flex; gap: 8px; margin-top: 18px; align-items: center; }
+.crate small { font-size: .64rem; letter-spacing: .18em; text-transform: uppercase; color: var(--muted); margin-right: 4px; }
+.sleeve-mini { width: 40px; height: 40px; border-radius: 2px; background: var(--s); box-shadow: 0 4px 10px rgba(0,0,0,.5), inset 0 0 0 1px rgba(255,255,255,.1); transition: transform .2s; }
+.sleeve-mini:hover, .sleeve-mini.on { transform: translateY(-5px); }
+.sleeve-mini.on { box-shadow: 0 0 0 2px var(--amber), 0 4px 10px rgba(0,0,0,.5); }
+.now { font-size: .76rem; color: var(--muted); margin-top: 10px; min-height: 1.2em; }
+.now b { color: var(--ivory); font-weight: 500; }
+
+/* ---------- Liner notes (what the record "plays") ---------- */
+.notes {
+  position: relative; z-index: 1; align-self: center; margin-bottom: 40px;
+  background: var(--paper); color: #2a1d10; padding: 26px 28px; border-radius: 2px;
+  box-shadow: 0 20px 40px rgba(0,0,0,.6);
+  transform: rotate(-1.5deg) translateY(20px); opacity: 0; transition: opacity .7s 1.4s, transform .7s 1.4s;
+  max-width: 420px;
+}
+.notes.show { opacity: 1; transform: rotate(-1.5deg); }
+.notes small { font: 600 .64rem/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: #8a5a2b; }
+.notes h2 { font: 600 1.9rem/1.05 var(--serif); margin: 8px 0 10px; }
+.notes p { font-size: .9rem; color: #3d2c1b; }
+.notes p + p { margin-top: 8px; }
+.notes blockquote { font: italic 500 1.15rem/1.3 var(--serif); margin-top: 14px; padding-left: 12px; border-left: 2px solid #b3101e; }
+.notes .closed-hint { font: 600 1.6rem/1.2 var(--hand); color: #6b4428; }
+
+/* ---------- Cassette tower ---------- */
+.tower { position: relative; z-index: 1; width: 300px; padding: 12px; background: linear-gradient(180deg, #2a1b11, #1a110b); border-radius: 4px; box-shadow: 0 16px 30px rgba(0,0,0,.6), inset 0 0 0 1px rgba(255,255,255,.05); }
+.tower h3 { font: 600 .64rem/1 var(--sans); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin: 2px 2px 10px; }
+.spine {
+  display: flex; align-items: center; width: 100%; height: 48px; margin-bottom: 7px;
+  background: #1c1c1e; border-radius: 3px; padding: 6px; gap: 8px; text-align: left;
+  box-shadow: 0 3px 6px rgba(0,0,0,.6), inset 0 1px 0 rgba(255,255,255,.08);
+  transition: transform .25s cubic-bezier(.2,.8,.2,1);
+}
+.spine:last-child { margin-bottom: 0; }
+.spine:hover, .spine:focus-visible { transform: translateX(-14px); }
+.spine .strip { width: 8px; align-self: stretch; border-radius: 2px; background: var(--tape); }
+.spine .lab { flex: 1; align-self: stretch; background: var(--paper); border-radius: 2px; display: flex; align-items: center; justify-content: space-between; padding: 0 10px; color: #2a1d10; }
+.spine .lab b { font: 600 1.35rem/1 var(--hand); }
+.spine .lab span { font: 600 .56rem/1 var(--sans); letter-spacing: .14em; text-transform: uppercase; color: #8a5a2b; }
+
+/* ---------- Tape deck modal ---------- */
+.modal { position: fixed; inset: 0; z-index: 20; display: grid; place-items: center; padding: 20px; background: rgba(5,4,3,.72); backdrop-filter: blur(4px); opacity: 0; pointer-events: none; transition: opacity .3s; }
+.modal.open { opacity: 1; pointer-events: auto; }
+.player { display: grid; grid-template-columns: auto 1fr; gap: 28px; align-items: start; width: min(980px, 100%); max-height: calc(100dvh - 40px); }
+.tape-side { display: grid; gap: 14px; justify-items: center; }
+.cassette {
+  width: 360px; aspect-ratio: 1.58; position: relative; border-radius: 12px; padding: 14px 16px 0;
+  background: linear-gradient(180deg, #2a2a2d, #18181a); box-shadow: 0 24px 50px rgba(0,0,0,.7), inset 0 1px 0 rgba(255,255,255,.12);
+  transform: translateY(40px) rotate(-6deg); opacity: 0; transition: transform .6s cubic-bezier(.2,.8,.2,1), opacity .4s;
+}
+.modal.open .cassette { transform: none; opacity: 1; }
+.c-label { position: relative; height: 66%; background: var(--paper); border-radius: 4px; border-top: 14px solid var(--tape); padding: 4px 12px; color: #2a1d10; }
+.c-label .side { position: absolute; left: 10px; top: -13px; font: 700 .62rem/1 var(--sans); color: #fff; letter-spacing: .1em; }
+.c-label b { font: 600 1.8rem/1 var(--hand); display: block; }
+.c-window { position: absolute; left: 50%; top: 48%; transform: translateX(-50%); width: 62%; height: 32%; background: #0c0c0d; border-radius: 40px; display: flex; justify-content: space-between; align-items: center; padding: 0 9%; box-shadow: inset 0 2px 6px rgba(0,0,0,.9); }
+.c-window::before { content: ""; position: absolute; left: 30%; right: 30%; top: 30%; bottom: 30%; background: linear-gradient(90deg, #3a2a1e, #4a3626); border-radius: 2px; opacity: .8; }
+.reel { position: relative; width: 26%; aspect-ratio: 1; border-radius: 50%; background: repeating-conic-gradient(#f4f4f4 0 10deg, transparent 10deg 60deg), radial-gradient(circle, #222 0 30%, #f4f4f4 31% 42%, #2a2a2a 43%); }
+.reel::after { content: ""; position: absolute; inset: 30%; border-radius: 50%; background: #111; }
+.playing .reel { animation: spin 1.6s linear infinite; }
+.c-bottom { position: absolute; left: 18%; right: 18%; bottom: 0; height: 18%; background: #222225; clip-path: polygon(8% 0, 92% 0, 100% 100%, 0 100%); display: flex; justify-content: space-around; align-items: center; }
+.c-bottom i { width: 10px; height: 10px; border-radius: 50%; background: #0a0a0a; }
+.controls { display: flex; gap: 8px; align-items: center; }
+.controls button, .controls span { font: 600 .74rem/1 var(--sans); letter-spacing: .12em; padding: 10px 12px; border: 1px solid var(--line); background: rgba(27,22,18,.9); }
+.controls button:hover { border-color: var(--amber); color: var(--amber); }
+.controls span { font-variant-numeric: tabular-nums; color: var(--amber); }
+
+.jcard {
+  background: var(--paper); color: #2a1d10; border-radius: 3px; padding: 24px 26px; overflow-y: auto; max-height: calc(100dvh - 40px);
+  box-shadow: 0 24px 50px rgba(0,0,0,.7); border-left: 14px solid var(--tape);
+  transform-origin: left center; transform: perspective(900px) rotateY(-70deg); opacity: 0;
+  transition: transform .7s cubic-bezier(.2,.8,.2,1) .25s, opacity .4s .25s;
+}
+.modal.open .jcard { transform: none; opacity: 1; }
+.jcard small { font: 600 .62rem/1 var(--sans); letter-spacing: .22em; text-transform: uppercase; color: #8a5a2b; }
+.jcard h2 { font: 600 2.2rem/1 var(--serif); margin: 6px 0 14px; }
+.tracks { list-style: none; border-top: 1px dashed rgba(42,29,16,.35); }
+.tracks li { display: grid; grid-template-columns: 34px 1fr; gap: 2px 8px; padding: 12px 0; border-bottom: 1px dashed rgba(42,29,16,.35); }
+.tracks .n { font: 600 .72rem/1.6 var(--sans); color: #8a5a2b; letter-spacing: .06em; }
+.tracks b { font: 600 1.1rem/1.25 var(--serif); }
+.tracks b em { font: 500 .74rem/1 var(--sans); font-style: normal; color: #8a5a2b; margin-left: 6px; }
+.tracks p { grid-column: 2; font-size: .86rem; color: #4a3826; }
+.tracks li.playing-now { background: linear-gradient(90deg, rgba(217,164,91,.22), transparent); }
+
+.mock-tag { position: fixed; left: 50%; bottom: 6px; transform: translateX(-50%); z-index: 30; font-size: .62rem; letter-spacing: .2em; text-transform: uppercase; color: rgba(179,166,144,.5); pointer-events: none; }
+
+@media (max-width: 980px) {
+  .console { grid-template-columns: 1fr; justify-items: center; gap: 28px; padding: 0 0 34px; }
+  .notes { margin-bottom: 0; order: 2; }
+  .tower { order: 3; margin-bottom: 28px; }
+  .console::after { display: none; }
+}
+@media (max-width: 760px) {
+  .top { padding: 14px 16px; }
+  .title h1 { font-size: 1.6rem; }
+  .console-wrap { padding: 8px 16px 0; }
+  .tt { width: 300px; height: 240px; }
+  .platter { left: 18px; top: 20px; width: 200px; height: 200px; }
+  .label { width: 66px; height: 66px; margin: -33px 0 0 -33px; font-size: .5rem; }
+  .arm { right: 30px; top: 26px; height: 170px; }
+  .arm::after { height: 152px; }
+  .speed { left: 228px; bottom: 16px; }
+  .notes { padding: 20px; }
+  .tower { width: 100%; max-width: 340px; }
+  .player { grid-template-columns: 1fr; gap: 16px; overflow-y: auto; }
+  .cassette { width: min(300px, 82vw); }
+  .jcard { max-height: none; overflow: visible; }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { animation: none !important; transition: none !important; } }
+</style>
+</head>
+<body>
+<div class="room">
+  <header class="top">
+    <div class="title"><small>Upstairs · The Mezzanine</small><h1>The Listening Room</h1></div>
+    <a href="mockup-garage.html">← Back to garage</a>
+  </header>
+
+  <div class="console-wrap">
+    <div class="console">
+      <!-- Turntable: open the lid to play "About me" -->
+      <div class="deck-col">
+        <div class="tt" id="tt" role="button" tabindex="0" aria-label="Open the record player">
+          <div class="platter"><div class="vinyl" id="vinyl"><div class="label" id="label"><span id="label-text">AP · Side A</span></div></div></div>
+          <div class="arm"><i></i></div>
+          <span class="knob" style="right:22px;bottom:20px"></span>
+          <span class="knob" style="right:54px;bottom:20px;width:16px;height:16px"></span>
+          <span class="speed">33 ⅓ RPM</span>
+          <div class="cover"><span>Lift the lid ↑</span></div>
+        </div>
+        <div class="crate" id="crate"><small>Crate</small></div>
+        <p class="now" id="now"></p>
+      </div>
+
+      <div class="notes" id="notes">
+        <small>Liner notes · Side A</small>
+        <h2>About Adrien</h2>
+        <p>NYU Stern junior in Business, Technology &amp; Entrepreneurship, with a second major in Public Policy at Wagner.</p>
+        <p>I’ve run an online collectibles business since 2020 ($30K+ in sales, 450+ customers) and taken that operator mindset into strategy work with EY, Fulton and Arête. Interested in wealth management, consulting, finance and hospitality.</p>
+        <blockquote>“The details are not the details. They make the design.” — Charles Eames</blockquote>
+      </div>
+
+      <!-- Cassette tower: each tape is a section -->
+      <div class="tower">
+        <h3>Pick a tape</h3>
+        <div id="tapes"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="modal" id="modal" aria-hidden="true">
+  <div class="player" id="player">
+    <div class="tape-side">
+      <div class="cassette" id="cassette">
+        <div class="c-label"><span class="side" id="c-side">SIDE A</span><b id="c-title"></b></div>
+        <div class="c-window"><span class="reel"></span><span class="reel"></span></div>
+        <div class="c-bottom"><i></i><i></i><i></i><i></i></div>
+      </div>
+      <div class="controls">
+        <button id="prevTrack" aria-label="Previous track">⏮</button>
+        <button id="playPause" aria-label="Play or pause">⏸</button>
+        <button id="nextTrack" aria-label="Next track">⏭</button>
+        <span id="counter">000</span>
+        <button id="eject">⏏ Eject</button>
+      </div>
+    </div>
+    <div class="jcard" id="jcard"></div>
+  </div>
+</div>
+
+<p class="mock-tag">Mockup · Concept B</p>
+
+<script>
+var TAPES = [
+  { title: 'Education', side: 'A', tape: '#c9cdd2', tracks: [
+    ['NYU Stern', 'Dec 2027', 'B.S. in Business, Technology & Entrepreneurship · GPA 3.68 / 4.00'],
+    ['NYU Wagner', 'Double major', 'B.A. in Public Policy'],
+    ['Beta Alpha Psi', 'Mu Chapter', '#1 of 120+ in rush · Candidate of the Semester · Community Service Chair for ~115 members'],
+    ['Chaminade High School', '2024', '4.0 unweighted GPA · four-year Honor Roll · Excellence of Character Award']
+  ]},
+  { title: 'Experience', side: 'A', tape: '#d40000', tracks: [
+    ['EY · Future Bridge', '2026', 'One of ~80 chosen from 700+. Worked a coffee-company case and presented to EY professionals.'],
+    ['Fulton · Brand Strategy', '2026', 'Team of 4, a few dozen interviews, one ideal-customer persona. Recommended an outdoor slipper, now on sale.'],
+    ['Arête · UI Intern', '2024', 'Homepage and UI redesign in Figma, adopted by Arête.']
+  ]},
+  { title: 'Projects', side: 'A', tape: '#1f6fe0', tracks: [
+    ['Collectibles Business', '2020 – now', '$30K+ revenue · 450+ customers · 4.8★+ across eBay, TCGplayer and Mercari'],
+    ['Astoria Real Estate Analysis', '2026', 'A few dozen multifamily and mixed-use buildings, $1.8M–$4M; cap rates of 2.5–5%'],
+    ['In the studio: Airbnb arbitrage', 'Coming soon', 'Studying short-term rental markets with plans to launch.']
+  ]},
+  { title: 'Skills', side: 'A', tape: '#b3101e', tracks: [
+    ['Finance & Analysis', '', 'Excel · Bloomberg Terminal · Minitab · NOI, cap rates, cash-on-cash'],
+    ['Strategy & Research', '', 'Consumer interviews · personas · brand positioning · case structuring'],
+    ['Design & Operations', '', 'Figma · UI prototyping · pricing · inventory · fulfillment'],
+    ['Bonus track', '', 'Python & SQL (basic) · PC building · Spanish (elementary)']
+  ]},
+  { title: 'Off the clock', side: 'B', tape: '#d9a45b', tracks: [
+    ['LEGO', '', 'Favorite set: the Star Wars Republic Dropship with AT-OT Walker'],
+    ['Sports cars', '', 'The Acura NSX, always'],
+    ['Collections', '', 'Coins · vinyl · cassettes · Pokémon'],
+    ['Outside', '', 'Hiking whenever I can get out of the city']
+  ]}
+];
+var ALBUMS = [
+  ['My Beautiful Dark Twisted Fantasy', 'Kanye West', '#c4161c'],
+  ['Graduation', 'Kanye West', '#b34fc0'],
+  ['Charm', 'Clairo', '#8f9057'],
+  ['Bewitched', 'Laufey', '#7d93bd'],
+  ['Happier Than Ever', 'Billie Eilish', '#c9b48a']
+];
+
+// ---- Turntable ----
+var tt = document.getElementById('tt'), notes = document.getElementById('notes'), label = document.getElementById('label');
+function toggleLid() {
+  var open = tt.classList.toggle('open');
+  notes.classList.toggle('show', open);
+  tt.setAttribute('aria-label', open ? 'Close the record player' : 'Open the record player');
+}
+tt.addEventListener('click', toggleLid);
+tt.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLid(); } });
+
+var crate = document.getElementById('crate'), now = document.getElementById('now');
+ALBUMS.forEach(function (a) {
+  var b = document.createElement('button');
+  b.className = 'sleeve-mini'; b.style.setProperty('--s', 'linear-gradient(145deg,' + a[2] + ', #1a1a1a)');
+  b.setAttribute('aria-label', 'Put on ' + a[0] + ' by ' + a[1]);
+  b.addEventListener('click', function () {
+    crate.querySelectorAll('.on').forEach(function (o) { o.classList.remove('on'); });
+    b.classList.add('on');
+    label.style.setProperty('--lbl', a[2]);
+    document.getElementById('label-text').textContent = a[0].length > 18 ? 'MBDTF' : a[0];
+    now.innerHTML = '♪ Now spinning: <b>' + a[0] + '</b> · ' + a[1];
+    if (!tt.classList.contains('open')) toggleLid();
+  });
+  crate.appendChild(b);
+});
+
+// ---- Cassettes ----
+var tapesEl = document.getElementById('tapes'), modal = document.getElementById('modal'), jcard = document.getElementById('jcard');
+var current = null, track = 0, playing = true, seconds = 0, timer;
+TAPES.forEach(function (t, i) {
+  var b = document.createElement('button');
+  b.className = 'spine'; b.style.setProperty('--tape', t.tape);
+  b.innerHTML = '<span class="strip"></span><span class="lab"><b>' + t.title + '</b><span>Side ' + t.side + ' · ' + t.tracks.length + ' tracks</span></span>';
+  b.addEventListener('click', function () { insert(i); });
+  tapesEl.appendChild(b);
+});
+
+function insert(i) {
+  current = TAPES[i]; track = 0; seconds = 0;
+  modal.style.setProperty('--tape', current.tape);
+  document.getElementById('c-title').textContent = current.title;
+  document.getElementById('c-side').textContent = 'SIDE ' + current.side;
+  jcard.innerHTML = '<small>Side ' + current.side + ' · Adrien Pinilla</small><h2>' + current.title + '</h2><ol class="tracks">' +
+    current.tracks.map(function (tr, n) {
+      return '<li><span class="n">' + current.side + (n + 1) + '</span><b>' + tr[0] + (tr[1] ? '<em>' + tr[1] + '</em>' : '') + '</b><p>' + tr[2] + '</p></li>';
+    }).join('') + '</ol>';
+  modal.classList.add('open'); modal.setAttribute('aria-hidden', 'false');
+  setPlaying(true); highlight();
+  document.getElementById('eject').focus();
+}
+function highlight() { jcard.querySelectorAll('.tracks li').forEach(function (li, n) { li.classList.toggle('playing-now', n === track); }); }
+function setPlaying(p) {
+  playing = p;
+  document.getElementById('cassette').classList.toggle('playing', p);
+  document.getElementById('playPause').textContent = p ? '⏸' : '▶';
+  clearInterval(timer);
+  if (p) timer = setInterval(function () { seconds++; document.getElementById('counter').textContent = String(seconds).padStart(3, '0'); }, 1000);
+}
+function eject() { modal.classList.remove('open'); modal.setAttribute('aria-hidden', 'true'); setPlaying(false); }
+document.getElementById('eject').addEventListener('click', eject);
+document.getElementById('playPause').addEventListener('click', function () { setPlaying(!playing); });
+document.getElementById('nextTrack').addEventListener('click', function () { track = Math.min(track + 1, current.tracks.length - 1); highlight(); });
+document.getElementById('prevTrack').addEventListener('click', function () { track = Math.max(track - 1, 0); highlight(); });
+modal.addEventListener('click', function (e) { if (e.target === modal) eject(); });
+document.addEventListener('keydown', function (e) { if (e.key === 'Escape' && modal.classList.contains('open')) eject(); });
+</script>
+</body>
+</html>

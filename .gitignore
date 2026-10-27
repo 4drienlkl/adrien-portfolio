@@ -1,0 +1,5 @@
+# Local tooling and the Netlify upload copy
+.claude/
+skills-lock.json
+adrien-portfolio/
+.DS_Store

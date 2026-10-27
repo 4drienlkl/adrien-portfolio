@@ -1,0 +1,202 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Realistic Garage Concept</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=Inter:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+:root {
+  color-scheme: dark;
+  --ivory: #f4efe6;
+  --muted: #b9b2a6;
+  --hot: #ff5a1f;
+  --hud: rgba(10, 10, 12, 0.72);
+  --cond: "Barlow Condensed", "Arial Narrow", sans-serif;
+  --sans: "Inter", -apple-system, "Segoe UI", sans-serif;
+}
+* { box-sizing: border-box; margin: 0; padding: 0; }
+html, body { height: 100%; background: #050506; color: var(--ivory); font: 400 15px/1.5 var(--sans); overflow: hidden; -webkit-font-smoothing: antialiased; }
+button { font: inherit; color: inherit; background: none; border: 0; cursor: pointer; }
+:focus-visible { outline: 2px solid var(--hot); outline-offset: 3px; }
+
+/* The photo fills the screen like a game camera ("cover"); on narrow screens you pan sideways */
+.viewport { position: fixed; inset: 0; overflow: hidden; }
+.stage {
+  position: absolute; left: 50%; top: 50%;
+  width: max(100vw, calc(100dvh * 1672 / 941)); aspect-ratio: 1672 / 941;
+  transform: translate(-50%, -50%);
+}
+.cam { position: absolute; inset: 0; transition: transform 1.1s cubic-bezier(.6, 0, .2, 1), filter .6s; transform-origin: 50% 50%; }
+.cam img { width: 100%; height: 100%; display: block; user-select: none; -webkit-user-drag: none; }
+.zoomed .cam { transform: scale(var(--z, 1.9)); }
+.vignette { position: absolute; inset: 0; pointer-events: none; background: radial-gradient(ellipse 75% 70% at 50% 55%, transparent 55%, rgba(0,0,0,.65)); }
+.dim .cam img { filter: brightness(.55) saturate(.9); transition: filter .4s; }
+
+/* Hotspots: a floor glow under the car + a Forza-style tag above it */
+.spot { position: absolute; transform: translate(-50%, -50%); }
+.glow {
+  position: absolute; left: 50%; top: calc(50% + var(--hh) * .4); transform: translate(-50%, -50%) scale(.85);
+  width: var(--w); height: var(--h); border-radius: 50%;
+  background: radial-gradient(ellipse, rgba(255, 90, 31, .55), rgba(255, 90, 31, 0) 70%);
+  mix-blend-mode: screen; opacity: 0; transition: opacity .35s, transform .35s; pointer-events: none;
+}
+.hit { position: absolute; left: 50%; top: 50%; transform: translate(-50%, -50%); width: var(--w); height: var(--hh); border-radius: 40%; }
+.tag {
+  position: absolute; left: 50%; bottom: calc(50% + var(--hh) / 2 - 6px); transform: translateX(-50%);
+  display: flex; align-items: center; gap: 8px; white-space: nowrap; pointer-events: none;
+  font: 600 .78rem/1 var(--cond); letter-spacing: .14em; text-transform: uppercase;
+}
+.pin { width: 12px; height: 12px; border-radius: 50%; background: var(--hot); box-shadow: 0 0 0 3px rgba(255,90,31,.25); animation: pulse 2s ease-in-out infinite; flex: none; }
+@keyframes pulse { 50% { box-shadow: 0 0 0 8px rgba(255,90,31,0); } }
+.tag span { background: var(--hud); padding: 6px 9px; border-left: 2px solid var(--hot); backdrop-filter: blur(6px); opacity: .0; transform: translateY(4px); transition: opacity .25s, transform .25s; }
+.spot:hover .glow, .spot.focus .glow { opacity: 1; transform: translate(-50%, -50%) scale(1); }
+.spot:hover .tag span, .spot.focus .tag span { opacity: 1; transform: none; }
+.zoomed .spot { opacity: 0; pointer-events: none; transition: opacity .3s; }
+
+/* HUD */
+.hud { position: fixed; z-index: 10; pointer-events: none; }
+.hud > * { pointer-events: auto; }
+.hud.tl { left: 0; top: 0; padding: 20px 26px 30px; background: linear-gradient(180deg, rgba(5,5,6,.92), rgba(5,5,6,.75) 70%, transparent); min-width: 230px; min-height: 180px; }
+.hud.tl small { font: 600 .74rem/1 var(--cond); letter-spacing: .24em; text-transform: uppercase; color: var(--hot); }
+.hud.tl h1 { font: 700 2.1rem/1 var(--cond); letter-spacing: .04em; text-transform: uppercase; margin-top: 6px; }
+.hud.tl p { font-size: .8rem; color: var(--muted); margin-top: 6px; }
+.hud.tr { right: 22px; top: 20px; display: flex; gap: 8px; }
+.pill { font: 600 .78rem/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; background: var(--hud); padding: 9px 12px; border: 1px solid rgba(255,255,255,.12); backdrop-filter: blur(6px); }
+.pill b { color: var(--hot); margin-right: 6px; }
+.hud.bl { left: 26px; bottom: 22px; font: 600 .8rem/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; color: var(--muted); display: flex; gap: 18px; }
+.hud.bl i { font-style: normal; display: inline-grid; place-items: center; width: 20px; height: 20px; border-radius: 50%; background: var(--ivory); color: #111; margin-right: 7px; font-size: .7rem; }
+.hud.br { right: 0; bottom: 0; width: 120px; height: 110px; background: radial-gradient(circle at 100% 100%, rgba(5,5,6,.95) 40%, transparent 72%); }
+.concept { position: fixed; z-index: 11; left: 50%; top: 14px; transform: translateX(-50%); font: 600 .7rem/1 var(--cond); letter-spacing: .2em; text-transform: uppercase; background: #ffd23f; color: #111; padding: 6px 10px; white-space: nowrap; }
+
+/* Detail panel (slides in after the camera pushes in) */
+.panel {
+  position: fixed; z-index: 12; right: 0; top: 0; height: 100dvh; width: min(440px, 100%);
+  background: linear-gradient(90deg, rgba(8,8,10,.55), rgba(8,8,10,.94) 18%); padding: 90px 34px 34px 60px;
+  transform: translateX(105%); transition: transform .6s cubic-bezier(.2,.8,.2,1) .5s; overflow-y: auto;
+}
+.zoomed .panel { transform: none; }
+.panel small { font: 600 .78rem/1 var(--cond); letter-spacing: .22em; text-transform: uppercase; color: var(--hot); }
+.panel h2 { font: 700 3rem/1 var(--cond); text-transform: uppercase; margin: 8px 0 4px; }
+.panel .car { font-size: .82rem; color: var(--muted); }
+.panel .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; margin: 26px 0; }
+.panel .stats div { border-top: 2px solid var(--hot); padding-top: 8px; }
+.panel .stats b { display: block; font: 700 1.7rem/1 var(--cond); }
+.panel .stats span { font-size: .72rem; color: var(--muted); letter-spacing: .08em; text-transform: uppercase; }
+.panel p { color: #d6d0c6; font-size: .92rem; }
+.panel .back { margin-top: 28px; font: 600 .82rem/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; display: flex; align-items: center; gap: 8px; }
+.panel .back i { font-style: normal; display: inline-grid; place-items: center; width: 22px; height: 22px; border-radius: 50%; background: #e0412b; color: #fff; font-size: .72rem; }
+
+@media (max-width: 760px) {
+  .viewport { overflow-x: auto; overflow-y: hidden; scrollbar-width: none; }
+  .viewport::-webkit-scrollbar { display: none; }
+  .stage { left: 0; transform: translateY(-50%); }
+  .hud.tl { padding: 14px 16px 24px; min-width: 0; min-height: 120px; }
+  .hud.tl h1 { font-size: 1.6rem; }
+  .hud.tr { display: none; }
+  .hud.bl { left: 16px; bottom: 16px; }
+  .hud.bl .desk { display: none; }
+  .tag span { opacity: 1; transform: none; }
+  .panel { padding: 70px 22px 28px; background: rgba(8,8,10,.94); }
+}
+@media (prefers-reduced-motion: reduce) { *, *::before, *::after { transition: none !important; animation: none !important; } }
+</style>
+</head>
+<body>
+<div class="concept">Concept demo · draft image</div>
+
+<div class="viewport" id="viewport">
+  <div class="stage" id="stage">
+    <div class="cam" id="cam">
+      <img src="../assets/garage-overview.webp" alt="Private garage with an Acura NSX, Ferrari 488, Corvette C8 and Mercedes SLS" width="1672" height="941">
+      <div id="spots"></div>
+    </div>
+    <div class="vignette"></div>
+  </div>
+</div>
+
+<div class="hud tl">
+  <small>NYU Stern ’27</small>
+  <h1>Adrien Pinilla</h1>
+  <p>Analytical by training. Entrepreneurial by habit.</p>
+</div>
+<div class="hud tr"><span class="pill"><b>CR</b>$30K+</span><span class="pill">Contact</span></div>
+<div class="hud bl"><span><i>A</i>Select</span><span class="desk"><i>B</i>Back</span><span class="desk">← → Browse</span></div>
+
+<aside class="panel" id="panel" aria-live="polite"></aside>
+
+<script>
+// x / y: the car's centre as % of the photo. w / h: floor glow size, hh: car height (both in % of photo width).
+// z: how far the camera pushes in. Listed left to right so the arrow keys move across the room.
+var SPOTS = [
+  { x: 17.6, y: 68.5, w: 28, h: 7, hh: 11, z: 1.7, label: 'Chapter IV · Skills', car: 'Acura NSX Type S · Valencia Red Pearl',
+    stats: [['Excel', 'Bloomberg'], ['Figma', 'Prototyping'], ['Interviews', 'Personas'], ['Python', 'SQL basics']],
+    text: 'Finance, strategy, design and operations toolkit. And the NSX is my favorite car.' },
+  { x: 39.3, y: 62.7, w: 21, h: 5.5, hh: 7.5, z: 2, label: 'Chapter II · Experience', car: 'Ferrari 488 GTB · Rosso Corsa',
+    stats: [['80 of 700+', 'EY selection'], ['3', 'Roles'], ['Adopted', 'Arête redesign'], ['Now on sale', 'Fulton slipper']],
+    text: 'EY Future Bridge, Fulton brand strategy and the Arête UI redesign.' },
+  { x: 58.0, y: 60.0, w: 19, h: 5, hh: 7, z: 2, label: 'Chapter III · Projects', car: 'Chevrolet Corvette C8 · Rapid Blue',
+    stats: [['$30K+', 'Revenue'], ['450+', 'Customers'], ['4.8★+', 'Rating'], ['2.5–5%', 'Astoria cap rates']],
+    text: 'The collectibles business and the Astoria real estate analysis.' },
+  { x: 74.2, y: 64.5, w: 20, h: 6, hh: 12, z: 1.9, label: 'Chapter I · Education', car: 'Mercedes-Benz SLS AMG · Iridium Silver',
+    stats: [['3.68', 'GPA'], ['#1 of 120+', 'Beta Alpha Psi'], ['2', 'Majors'], ['Dec 2027', 'Graduation']],
+    text: 'NYU Stern + Wagner, Beta Alpha Psi and Chaminade.' },
+  { x: 48.4, y: 77.0, w: 26, h: 7, hh: 9, z: 1.8, label: 'Heritage · About', car: 'The two vintage bikes on the rug',
+    stats: [['2020', 'First business'], ['4', 'Target fields']],
+    text: 'Short bio, the Eames quote on the wall, and what I am looking for.' },
+  { x: 68.0, y: 28.5, w: 30, h: 5, hh: 9, z: 2, label: 'Upstairs · Listening Room', car: 'The mezzanine lounge',
+    stats: [['5', 'Tapes'], ['Side B', 'Off the clock']],
+    text: 'Head up the stairs to the cassette deck and turntable: music, LEGO, coins.' }
+];
+
+var spotsEl = document.getElementById('spots'), body = document.body, cam = document.getElementById('cam'), panel = document.getElementById('panel');
+var current = -1;
+SPOTS.forEach(function (s, i) {
+  var el = document.createElement('button');
+  el.className = 'spot';
+  el.style.cssText = 'left:' + s.x + '%;top:' + s.y + '%;--w:' + s.w + 'cqw;--h:' + s.h + 'cqw;--hh:' + s.hh + 'cqw';
+  el.setAttribute('aria-label', s.label);
+  el.innerHTML = '<span class="glow"></span><span class="hit"></span><span class="tag"><b class="pin"></b><span>' + s.label + '</span></span>';
+  el.addEventListener('click', function () { enter(i); });
+  el.addEventListener('mouseenter', function () { focusSpot(i); });
+  spotsEl.appendChild(el);
+});
+document.getElementById('stage').style.containerType = 'inline-size';
+
+function focusSpot(i) { spotsEl.querySelectorAll('.spot').forEach(function (e, n) { e.classList.toggle('focus', n === i); }); current = i; }
+
+// Push the camera in on the chosen car, then slide in its details
+function enter(i) {
+  var s = SPOTS[i]; current = i;
+  // Scale about the car, then slide it to the left of the screen (clear of the panel) without showing the photo's edges
+  var r = document.getElementById('stage').getBoundingClientRect();
+  var vw = innerWidth, vh = innerHeight, wide = vw > 760;
+  var px = r.left + s.x / 100 * r.width, py = r.top + s.y / 100 * r.height;
+  var tx = (wide ? vw * 0.34 : vw / 2) - px, ty = vh * 0.55 - py;
+  tx = Math.min(tx, -(px - s.x / 100 * r.width * s.z)); tx = Math.max(tx, vw - (px + (1 - s.x / 100) * r.width * s.z));
+  ty = Math.min(ty, -(py - s.y / 100 * r.height * s.z)); ty = Math.max(ty, vh - (py + (1 - s.y / 100) * r.height * s.z));
+  cam.style.transformOrigin = s.x + '% ' + s.y + '%';
+  cam.style.transform = 'translate(' + tx + 'px,' + ty + 'px) scale(' + s.z + ')';
+  body.classList.add('zoomed');
+  panel.innerHTML = '<small>' + s.label.split(' · ')[0] + '</small><h2>' + s.label.split(' · ')[1] + '</h2><p class="car">' + s.car + '</p>' +
+    '<div class="stats">' + s.stats.map(function (t) { return '<div><b>' + t[0] + '</b><span>' + t[1] + '</span></div>'; }).join('') + '</div>' +
+    '<p>' + s.text + '</p><button class="back" id="back"><i>B</i>Back to garage</button>';
+  document.getElementById('back').addEventListener('click', leave);
+}
+function leave() { body.classList.remove('zoomed'); cam.style.transform = ''; }
+
+document.addEventListener('keydown', function (e) {
+  if (body.classList.contains('zoomed')) { if (e.key === 'Escape' || e.key === 'Backspace' || e.key.toLowerCase() === 'b') leave(); return; }
+  if (e.key === 'ArrowRight') focusSpot((current + 1) % SPOTS.length);
+  else if (e.key === 'ArrowLeft') focusSpot((current - 1 + SPOTS.length) % SPOTS.length);
+  else if (e.key === 'Enter' && current >= 0) enter(current);
+});
+
+// On phones, start the pan centred on the hero car
+var vp = document.getElementById('viewport');
+if (vp.scrollWidth > vp.clientWidth) vp.scrollLeft = (vp.scrollWidth - vp.clientWidth) / 2;
+</script>
+</body>
+</html>
