@@ -774,6 +774,12 @@ CARS.forEach(function (c, i) {
   b.addEventListener('click', function () { if (x[0].id === 'room') openRoom(); else openSheet(x[0]); });
   picker.appendChild(b);
 });
+// The business game lives on its own page
+var game = document.createElement('button');
+game.className = 'card extra'; game.dataset.id = 'tycoon';
+game.innerHTML = '<small>Bonus</small><b>Tycoon</b><span>Play the game</span>';
+game.addEventListener('click', function () { location.href = 'tycoon.html'; });
+picker.appendChild(game);
 
 // The driver's name tag follows the figure on screen
 var tag = $('driver-tag'), look = 0, tagPos = new THREE.Vector3();
