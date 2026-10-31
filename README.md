@@ -22,9 +22,10 @@ Then open http://localhost:8000.
 | File | What it is |
 |---|---|
 | `index.html` | The garage: layout, styles and the listening room markup |
-| `garage.js` | The 3D showroom (three.js), the hood animation, and all the section content |
+| `garage.js` | The 3D showroom (three.js), the hood animation, and all the section content (car rendering comes from `vehicle3d.js`) |
 | `classic.html` | The same portfolio as one scrolling page ("Quick view") |
-| `tycoon.html` | Garage Tycoon: a sports car rental business game (buy cars, set prices, grow to $5M) |
+| `tycoon.html`, `tycoon.js` | Garage Tycoon: a sports car rental business game (buy or finance cars, set prices, grow to $5M). All economics come from `project()` / `dayProb()` in `tycoon.js` |
+| `vehicle3d.js` | Shared 3D car rendering (studio lighting, model loading, paint) used by both the garage and the game's marketplace |
 | `assets/cars/` | The four car models, compressed for the web (meshopt + WebP textures) |
 | `assets/` | Headshot, share card (`og-image.jpg`), favicons and the résumé PDF |
 | `mockups/` | Earlier concept mockups |

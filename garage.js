@@ -1,11 +1,10 @@
 import * as THREE from 'three';
-import { GLTFLoader } from 'three/addons/loaders/GLTFLoader.js';
-import { MeshoptDecoder } from 'three/addons/libs/meshopt_decoder.module.js';
 import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
 import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+import { VEHICLES, studioEnvironment, studioLights, fitCar, paintCar, loadCar } from './vehicle3d.js';
 
 var EMAIL = 'awp6745@stern.nyu.edu';
 var LINKEDIN = 'https://www.linkedin.com/in/adrien-pinilla-24b01630a/';
@@ -21,7 +20,7 @@ var CARS = [
   {
     id: 'experience', title: 'Experience', kicker: 'Chapter I', roman: 'I',
     year: 2022, make: 'Acura', model: 'NSX Type S', spec: '600 hp · 3.5L twin-turbo V6 hybrid · AWD', file: 'nsx',
-    paint: /^Acura.*Paint_Material$/, color: '#e0520f', metal: 0.5, // Thermal Orange Pearl
+    color: '#e0520f', // Thermal Orange Pearl
     hood: { meshes: /paint|carbon/i, region: { x: 0.9, y: 0.5, z: [0.8, 2.2] }, hinge: 'rear', angle: 0.95 },
     plate: 'EY · Fulton · Arête',
     stats: [['80 of 700+', 'EY selection'], ['3', 'Roles'], ['Adopted', 'Arête redesign'], ['On sale', 'Fulton slipper']],
@@ -42,7 +41,7 @@ var CARS = [
   {
     id: 'education', title: 'Education', kicker: 'Chapter II', roman: 'II',
     year: 2013, make: 'Mercedes-Benz', model: 'SLS AMG GT', spec: '583 hp · 6.2L naturally aspirated V8 · RWD', file: 'sls',
-    paint: /^SLSCarPaint$/, color: '#a7abb0', metal: 0.85,
+    color: '#a7abb0',
     hood: { nodes: /SK_Hood/, hinge: 'rear', angle: 0.9 },
     plate: 'NYU Stern · Wagner',
     stats: [['3.68', 'GPA / 4.00'], ['#1 of 120+', 'Beta Alpha Psi rush'], ['2', 'Majors'], ['Dec 2027', 'Graduation']],
@@ -57,7 +56,7 @@ var CARS = [
   {
     id: 'projects', title: 'Projects', kicker: 'Chapter III', roman: 'III',
     year: 2020, make: 'Chevrolet', model: 'Corvette C8 Stingray', spec: '495 hp · 6.2L V8 · mid-engine RWD', file: 'c8',
-    paint: /PaintTNR_Material$/, color: '#0b57c2', metal: 0.6,
+    color: '#0b57c2',
     hood: { meshes: /paint|window|carbon/i, region: { x: 0.85, y: 0.8, z: [-2.25, -0.5] }, hinge: 'front', angle: 0.85 },
     plate: 'Collectibles · Astoria',
     stats: [['$30K+', 'Revenue since 2020'], ['450+', 'Customers'], ['4.8★+', 'Seller rating'], ['2.5–5%', 'Astoria cap rates']],
@@ -73,7 +72,7 @@ var CARS = [
   {
     id: 'skills', title: 'Skills', kicker: 'Chapter IV', roman: 'IV',
     year: 2016, make: 'Ferrari', model: '488 GTB', spec: '661 hp · 3.9L twin-turbo V8 · RWD', file: '488',
-    paint: /^Main_Paint$/, color: '#b0101a', metal: 0.35,
+    color: '#b0101a',
     hood: { meshes: /paint|carbon/i, region: { x: 0.85, y: 0.6, z: [0.6, 2.2] }, hinge: 'rear', angle: 0.95 },
     plate: 'Finance · Strategy · Design',
     stats: [['Excel', 'Bloomberg · Minitab'], ['Figma', 'UI prototyping'], ['Interviews', 'Personas · positioning'], ['Python · SQL', 'Basics']],
@@ -147,36 +146,9 @@ scene.fog = new THREE.Fog(0x050506, 13, 30);
 var camera = new THREE.PerspectiveCamera(30, 1, 0.1, 100);
 var DISC = 0.08; // turntable surface height
 
-// Reflections come from an invisible light studio: long ceiling strips, two side softboxes and a warm kicker behind
-function studio() {
-  var env = new THREE.Scene();
-  var room = new THREE.Mesh(new THREE.BoxGeometry(30, 14, 30), new THREE.MeshBasicMaterial({ color: 0x08080a, side: THREE.BackSide }));
-  room.position.y = 6;
-  env.add(room);
-  function panelLight(w, h, k, tint, pos, rot) {
-    var m = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ color: new THREE.Color(tint[0] * k, tint[1] * k, tint[2] * k), side: THREE.DoubleSide }));
-    m.position.set(pos[0], pos[1], pos[2]);
-    m.rotation.set(rot[0], rot[1], rot[2]);
-    env.add(m);
-  }
-  [-2.6, 0, 2.6].forEach(function (x) { panelLight(0.45, 15, 7, [1, 1, 1], [x, 7, 0], [Math.PI / 2, 0, 0]); });
-  panelLight(12, 0.3, 4, [1, 1, 1], [0, 7, 5.5], [Math.PI / 2, 0, 0]);
-  panelLight(12, 0.3, 4, [1, 1, 1], [0, 7, -5.5], [Math.PI / 2, 0, 0]);
-  panelLight(14, 3.2, 3.2, [1, 0.97, 0.92], [-12, 2.6, 0], [0, Math.PI / 2, 0]);
-  panelLight(14, 3.2, 3.2, [1, 0.97, 0.92], [12, 2.6, 0], [0, -Math.PI / 2, 0]);
-  panelLight(16, 16, 0.35, [1, 1, 1], [0, 6.9, 0], [Math.PI / 2, 0, 0]);
-  panelLight(9, 1.2, 2.2, [1, 0.62, 0.3], [0, 1.4, -13], [0, 0, 0]);
-  panelLight(9, 1.2, 0.7, [0.6, 0.75, 1], [0, 1.4, 13], [0, Math.PI, 0]);
-  var pm = new THREE.PMREMGenerator(renderer);
-  var tex = pm.fromScene(env, 0.02).texture;
-  pm.dispose();
-  return tex;
-}
-scene.environment = studio();
-// A soft key from above and a cool/warm fill give the bodywork shape beyond its reflections
-var key = new THREE.DirectionalLight(0xfff4e8, 1.4);
-key.position.set(3, 9, 5);
-scene.add(key, new THREE.HemisphereLight(0xdfe6ff, 0x20160e, 0.55));
+// The light studio, key and fill are shared with Garage Tycoon (vehicle3d.js)
+scene.environment = studioEnvironment(renderer);
+var key = studioLights(scene);
 
 function radial(inner, outer) {
   var c = document.createElement('canvas'); c.width = c.height = 256;
@@ -318,7 +290,6 @@ function placeDriver() {
 }
 
 /* ---------- Cars ---------- */
-var loader = new GLTFLoader().setMeshoptDecoder(MeshoptDecoder);
 var cache = {};
 
 // Split a mesh into its separate panels (islands of connected triangles), in car space
@@ -419,24 +390,8 @@ function plateTexture(c) {
 function prepare(c, gltf) {
   var model = new THREE.Group(), fit = gltf.scene;
   model.add(fit);
-  model.updateMatrixWorld(true);
-  var b = new THREE.Box3().setFromObject(fit), size = b.getSize(new THREE.Vector3());
-  fit.scale.multiplyScalar(4.5 / size.z);
-  model.updateMatrixWorld(true);
-  b.setFromObject(fit);
-  var ctr = b.getCenter(new THREE.Vector3());
-  fit.position.set(-ctr.x, -b.min.y, -ctr.z).add(fit.position);
-
-  var paint = new THREE.MeshPhysicalMaterial({ color: c.color, metalness: c.metal, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.03 });
-  paint.name = 'paint';
-  fit.traverse(function (o) {
-    if (!o.isMesh) return;
-    var m = o.material;
-    if (c.paint.test(m.name)) { o.material = paint; return; }
-    // Glass: drop the expensive refraction pass and keep a tinted see-through look
-    if (m.transmission) { m.transmission = 0; m.transparent = true; m.opacity = Math.max(m.opacity, 0.32); m.depthWrite = false; }
-    if (/tyre|tire|styre|interior|carp|seat/i.test(m.name)) m.metalness = Math.min(m.metalness, 0.1);
-  });
+  fitCar(fit, model);
+  paintCar(fit, VEHICLES[c.file], c.color);
 
   var hood = liftHood(c, model);
   var hb = hood.box, hc = hb.getCenter(new THREE.Vector3());
@@ -481,7 +436,7 @@ function prepare(c, gltf) {
 function fetchCar(i, onProgress) {
   var c = CARS[i];
   if (!cache[c.file]) {
-    cache[c.file] = loader.loadAsync('assets/cars/' + c.file + '.glb', onProgress).then(function (g) { return prepare(c, g); });
+    cache[c.file] = loadCar(c.file, onProgress).then(function (g) { return prepare(c, g); });
   }
   return cache[c.file];
 }
