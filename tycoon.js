@@ -24,6 +24,9 @@ var RENTAL_MILES = 80;         // miles added per rental day
 var RENTAL_WEAR = 0.08;        // condition points lost per rental day (routine maintenance covers the rest)
 var FAIL_BASE = 0.012;         // weekly chance of an unscheduled repair for a typical car
 var WEEKS_PER_MONTH = 52 / 12;
+var COLLECTION_INS = 0.35;     // agreed-value storage insurance for cars on display, vs. a rental policy
+var COLLECTION_MAINT = 0.3;    // a car that isn't driven needs a fraction of the upkeep
+var COLLECTION_SPOTS = [1, 2, 3, 4, 6]; // display spots in your private collection at each garage tier
 
 // Monthly demand multipliers by category (each averages 1.0 over the year)
 var SEASONS = {
@@ -50,27 +53,21 @@ var MODELS = {
   nsx:  { make: 'Acura', name: 'NSX', v3d: 'nsx', cls: 'exotic', exotic: true, value: 128000, refYear: 2019, years: [2017, 2021], perYear: 3500, rate: 700, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 520, maint: 240, repair: 0.018, dep: 0.05, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.5, color: '#c9cdd2', trims: [['Coupe', 0, 0]] },
   nsxs: { make: 'Acura', name: 'NSX Type S', v3d: 'nsx', cls: 'collectible', exotic: true, value: 185000, refYear: 2022, years: [2022, 2022], perYear: 2500, rate: 850, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 620, maint: 280, repair: 0.015, dep: -0.03, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 1, color: '#e0520f', trims: [['Type S', 0, 0]] },
   f488: { make: 'Ferrari', name: '488 GTB', v3d: '488', cls: 'exotic', exotic: true, value: 205000, refYear: 2018, years: [2016, 2019], perYear: 2500, rate: 1200, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 800, maint: 450, repair: 0.022, dep: 0.03, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1.3, color: '#d40000', trims: [['GTB', 0, 0]] },
-  sls:  { make: 'Mercedes-Benz', name: 'SLS AMG', v3d: 'sls', cls: 'collectible', exotic: true, value: 235000, refYear: 2012, years: [2011, 2014], perYear: 2000, rate: 1000, demand: 0.19, lift: 1.7, elastic: 1.3, ins: 600, maint: 420, repair: 0.018, dep: -0.04, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 1, color: '#c9cdd2', trims: [['Coupe', 0, 0], ['GT', 0.1, 0.04, 2013]] }
+  sls:  { make: 'Mercedes-Benz', name: 'SLS AMG', v3d: 'sls', cls: 'collectible', exotic: true, value: 235000, refYear: 2012, years: [2011, 2014], perYear: 2000, rate: 1000, demand: 0.19, lift: 1.7, elastic: 1.3, ins: 600, maint: 420, repair: 0.018, dep: -0.04, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 1, color: '#c9cdd2', trims: [['Coupe', 0, 0], ['GT', 0.1, 0.04, 2013]] },
+  c911: { make: 'Porsche', name: '911 Carrera', v3d: 'c911', cls: 'sports', value: 105000, refYear: 2021, years: [2019, 2025], perYear: 4500, rate: 520, demand: 0.31, lift: 1.5, elastic: 1.5, ins: 380, maint: 210, repair: 0.014, dep: 0.05, clean: 30, deductible: 2500, rarity: 'Common', weight: 2.4, color: '#c9cdd2', trims: [['Carrera', 0, 0], ['Carrera S', 0.12, 0.05], ['Carrera 4S', 0.18, 0.07]] },
+  gtr:  { make: 'Nissan', name: 'GT-R', v3d: 'gtr', cls: 'sports', value: 88000, refYear: 2017, years: [2013, 2021], perYear: 5000, rate: 500, demand: 0.31, lift: 1.5, elastic: 1.5, ins: 420, maint: 290, repair: 0.02, dep: 0.03, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 2, color: '#1c1c1e', trims: [['Premium', 0, 0], ['Black Edition', 0.08, 0.03]] },
+  amggt: { make: 'Mercedes-AMG', name: 'GT', v3d: 'amggt', cls: 'sports', value: 84000, refYear: 2018, years: [2016, 2021], perYear: 4000, rate: 480, demand: 0.29, lift: 1.5, elastic: 1.5, ins: 380, maint: 290, repair: 0.019, dep: 0.08, clean: 30, deductible: 2500, rarity: 'Common', weight: 2, color: '#f2c230', trims: [['GT', 0, 0], ['GT S', 0.12, 0.04]] },
+  i8:   { make: 'BMW', name: 'i8', v3d: 'i8', cls: 'sports', value: 62000, refYear: 2018, years: [2015, 2020], perYear: 4000, rate: 400, demand: 0.27, lift: 1.5, elastic: 1.6, ins: 320, maint: 230, repair: 0.022, dep: 0.09, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 1.8, color: '#eef0f2', trims: [['Coupe', 0, 0]] },
+  emira: { make: 'Lotus', name: 'Emira', v3d: 'emira', cls: 'sports', value: 96000, refYear: 2024, years: [2023, 2025], perYear: 4000, rate: 450, demand: 0.27, lift: 1.5, elastic: 1.5, ins: 360, maint: 240, repair: 0.016, dep: 0.07, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 1.6, color: '#2f7d4f', trims: [['V6 First Edition', 0, 0]] },
+  r8:   { make: 'Audi', name: 'R8', v3d: 'r8', cls: 'exotic', exotic: true, value: 155000, refYear: 2020, years: [2017, 2023], perYear: 3000, rate: 950, demand: 0.25, lift: 1.7, elastic: 1.3, ins: 650, maint: 400, repair: 0.02, dep: 0.04, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.6, color: '#5a6068', trims: [['V10', 0, 0], ['V10 Performance', 0.12, 0.05, 2020], ['GT RWD', 0.3, 0.08, 2023]] },
+  huracan: { make: 'Lamborghini', name: 'Huracán', v3d: 'huracan', cls: 'exotic', exotic: true, value: 215000, refYear: 2017, years: [2015, 2019], perYear: 2500, rate: 1400, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 900, maint: 600, repair: 0.023, dep: 0.03, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1.4, color: '#f2c230', trims: [['LP610-4', 0, 0]] },
+  m570s: { make: 'McLaren', name: '570S', v3d: 'm570s', cls: 'exotic', exotic: true, value: 135000, refYear: 2018, years: [2016, 2021], perYear: 2500, rate: 950, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 720, maint: 580, repair: 0.03, dep: 0.08, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.2, color: '#ff7a1a', trims: [['Coupe', 0, 0]] },
+  gt3:  { make: 'Porsche', name: '911 GT3', v3d: 'gt3', cls: 'collectible', exotic: true, value: 220000, refYear: 2023, years: [2022, 2024], perYear: 2500, rate: 1000, demand: 0.21, lift: 1.7, elastic: 1.3, ins: 700, maint: 380, repair: 0.014, dep: -0.02, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1, color: '#c9cdd2', trims: [['GT3', 0, 0], ['Touring', 0.02, 0]] },
+  viper: { make: 'Dodge', name: 'Viper ACR', v3d: 'viper', cls: 'collectible', value: 160000, refYear: 2016, years: [2016, 2017], perYear: 1500, rate: 750, demand: 0.2, lift: 1.6, elastic: 1.4, ins: 520, maint: 330, repair: 0.02, dep: -0.05, clean: 35, deductible: 2500, rarity: 'Collectible', weight: 0.8, color: '#c8102e', trims: [['ACR', 0, 0]] },
+  // One of a kind: AO Racing's "Rexy" race car. It isn't street legal, so it can't be rented; it lives in your private collection.
+  rexy: { make: 'Porsche', name: '911 GT3 R “Rexy”', v3d: 'rexy', cls: 'collectible', exotic: true, track: true, livery: true, value: 750000, refYear: 2023, years: [2023, 2023], perYear: 400, rate: 0, demand: 0, lift: 1, elastic: 1, ins: 900, maint: 2500, repair: 0.01, dep: -0.07, clean: 0, deductible: 10000, rarity: 'One of a kind', weight: 0.12, color: '#2fae5a', trims: [['AO Racing #80', 0, 0]] }
 };
-/* Cars from saves made before the 3D marketplace. They keep working in your garage but no longer appear for sale. */
-function legacy(make, name, cls, value, refYear, rate, ins, maint, dep, exotic) {
-  return { make: make, name: name, legacy: true, cls: cls, exotic: !!exotic, value: value, refYear: refYear, years: [refYear, refYear], perYear: 5000, rate: rate,
-    demand: exotic ? 0.12 : cls === 'collectible' ? 0.1 : 0.26, lift: exotic ? 1.7 : 1.5, elastic: exotic ? 1.3 : 1.6, ins: ins, maint: maint, repair: exotic ? 0.028 : 0.018, dep: dep,
-    clean: exotic ? 45 : 30, deductible: exotic ? 5000 : 2500, rarity: 'Legacy', weight: 0, color: '#8a9099', trims: [['', 0, 0]] };
-}
-var LEGACY = {
-  i8: legacy('BMW', 'i8', 'sports', 60000, 2018, 350, 320, 230, 0.09),
-  c911: legacy('Porsche', '911 Carrera', 'sports', 98000, 2021, 450, 380, 220, 0.05),
-  gt3: legacy('Porsche', '911 GT3', 'collectible', 215000, 2021, 900, 760, 420, -0.03, true),
-  amggt: legacy('Mercedes-AMG', 'GT', 'sports', 82000, 2019, 450, 380, 290, 0.08),
-  gtr: legacy('Nissan', 'GT-R', 'sports', 92000, 2020, 500, 420, 300, 0.02),
-  r8: legacy('Audi', 'R8 V10', 'exotic', 140000, 2020, 700, 600, 400, 0.03, true),
-  huracan: legacy('Lamborghini', 'Huracán', 'exotic', 225000, 2019, 1300, 1050, 760, 0.03, true),
-  m570s: legacy('McLaren', '570S', 'exotic', 130000, 2018, 850, 720, 620, 0.09, true),
-  viper: legacy('Dodge', 'Viper ACR', 'collectible', 125000, 2016, 600, 520, 330, -0.05),
-  emira: legacy('Lotus', 'Emira', 'sports', 95000, 2024, 420, 380, 260, 0.07)
-};
-function M_(k) { return MODELS[k] || LEGACY[k]; }
+function M_(k) { return MODELS[k]; }
 var MARKET_MODELS = Object.keys(MODELS);
 var PAINTS = [
   ['Rosso Corsa', '#d40000'], ['Valencia Red', '#b3101e'], ['Thermal Orange', '#e0520f'], ['Rapid Blue', '#1f6fe0'], ['Iridium Silver', '#c9cdd2'],
@@ -104,7 +101,7 @@ var SAVE_KEY = 'garageTycoon.v1';
 var S;
 function newGame() {
   S = {
-    v: 2, week: 0, cash: START_CASH, rep: 3, tier: 0, nextId: 1,
+    v: 3, week: 0, cash: START_CASH, rep: 3, tier: 0, nextId: 1,
     cars: [], loans: [], market: [], ledger: [], news: [],
     history: [{ w: 0, nw: START_CASH, cash: START_CASH }],
     months: {}, totals: { gross: 0, noi: 0, bookings: 0 },
@@ -125,6 +122,7 @@ function load() {
     if (!s || !s.v) return false;
     S = s;
     if (S.v === 1) migrateV1();
+    if (S.v === 2) { S.cars.forEach(function (c) { c.display = !!c.display; }); S.v = 3; save(); } // v3 adds the private collection
     return true;
   } catch (e) { return false; }
 }
@@ -189,14 +187,14 @@ function dayProb(x, rate, weekend, o) {
   var noise = o.noise == null ? NOISE_MEAN : o.noise;
   return Math.min(0.9, base * priceF * season * market * repF * condF * ageF * compF * events * (x.wrap ? 1.04 : 1) * noise);
 }
-function maintMonthly(x) { return M_(x.model).maint * clamp(0.75 + x.miles / 60000, 0.75, 1.9); }
+function maintMonthly(x) { return M_(x.model).maint * clamp(0.75 + x.miles / 60000, 0.75, 1.9) * (x.display ? COLLECTION_MAINT : 1); }
 // Repair risk rises with age, mileage above normal and worn condition
 function repairMult(x, week) {
   var M = M_(x.model), w = week == null ? S.week : week;
   var mileR = clamp(0.8 + 0.4 * x.miles / expectedMiles(M, x.year, w), 0.8, 1.8);
   return (1 + 0.03 * ageOf(x, w)) * (1 + Math.max(0, 85 - x.cond) / 60) * mileR;
 }
-function insMonthly(x, listed) { return M_(x.model).ins * S.mods.ins * (listed === false ? 0.5 : 1); }
+function insMonthly(x, listed) { return M_(x.model).ins * S.mods.ins * (x.display ? COLLECTION_INS : listed === false ? 0.5 : 1); }
 
 /* project(): twelve months of expected economics for a car, month by month through the seasons.
    x: { model, trim, year, miles, cond, wrap, value } · o: { rate, wkRate, price, down, term, apr, comp, listed, extraCost }
@@ -204,7 +202,7 @@ function insMonthly(x, listed) { return M_(x.model).ins * S.mods.ins * (listed =
 function project(x, o) {
   o = o || {};
   var M = M_(x.model), rate = o.rate || refRate(x), wk = o.wkRate || refWkRate(x);
-  var listed = o.listed !== false, value = x.value != null ? x.value : valueOf(x, S.week);
+  var listed = o.listed !== false && !o.display, value = x.value != null ? x.value : valueOf(x, S.week);
   var months = [], tot = { days: 0, gross: 0, fees: 0, cleaning: 0, ins: 0, maint: 0, repairs: 0, damage: 0 };
   var miles = x.miles;
   for (var m = 0; m < 12; m++) {
@@ -215,13 +213,13 @@ function project(x, o) {
     var avail = (1 - TURNAROUND * avgP) * (1 - FAIL_BASE * repairMult({ model: x.model, year: x.year, miles: miles, cond: x.cond }, w) * 5 / 7);
     var days = (5 * pd + 2 * pe) * WEEKS_PER_MONTH * avail;
     var gross = (5 * pd * rate + 2 * pe * wk) * WEEKS_PER_MONTH * avail;
-    var rec = { w: w, days: days, gross: gross, fees: gross * PLATFORM_FEE, cleaning: days * M.clean, ins: insMonthly(x, listed),
-      maint: maintMonthly({ model: x.model, miles: miles }), repairs: value * M.repair * repairMult({ model: x.model, year: x.year, miles: miles, cond: x.cond }, w) / 12, damage: days * DAMAGE_P * M.deductible };
+    var rec = { w: w, days: days, gross: gross, fees: gross * PLATFORM_FEE, cleaning: days * M.clean, ins: insMonthly({ model: x.model, display: o.display }, listed),
+      maint: maintMonthly({ model: x.model, miles: miles, display: o.display }), repairs: value * M.repair * repairMult({ model: x.model, year: x.year, miles: miles, cond: x.cond }, w) / 12 * (o.display ? COLLECTION_MAINT : 1), damage: days * DAMAGE_P * M.deductible };
     rec.opex = rec.fees + rec.cleaning + rec.ins + rec.maint + rec.repairs + rec.damage;
     rec.noi = rec.gross - rec.opex;
     months.push(rec);
     ['days', 'gross', 'fees', 'cleaning', 'ins', 'maint', 'repairs', 'damage'].forEach(function (k) { tot[k] += rec[k]; });
-    miles += days * RENTAL_MILES + 100;
+    miles += days * RENTAL_MILES + (o.display ? 0 : 100);
   }
   var p = {};
   ['days', 'gross', 'fees', 'cleaning', 'ins', 'maint', 'repairs', 'damage'].forEach(function (k) { p[k] = tot[k] / 12; });
@@ -261,6 +259,9 @@ function debt() { return S.loans.reduce(function (t, l) { return t + l.balance; 
 function netWorth() { return S.cash + carsValue() - debt(); }
 function loanOf(carId) { for (var i = 0; i < S.loans.length; i++) if (S.loans[i].carId === carId) return S.loans[i]; return null; }
 function bays() { return TIERS[S.tier].bays; }
+function spots() { return COLLECTION_SPOTS[S.tier]; }
+function fleet() { return S.cars.filter(function (c) { return !c.display; }); }
+function shown() { return S.cars.filter(function (c) { return c.display; }); }
 function fixedMonthly() {
   var t = TIERS[S.tier].fee * WEEKS_PER_MONTH;
   S.cars.forEach(function (c) { t += insMonthly(c, c.listed) + maintMonthly(c); });
@@ -274,13 +275,14 @@ function interestFirstYear(principal, rateYr, months) { var b = principal, pay =
 /* What the player can do with a listing right now: cash, finance, or nothing (and why) */
 function purchaseOptions(l, price) {
   price = price || l.ask;
-  var o = { bay: S.cars.length < bays(), cash: S.cash >= price, finance: [], reason: '' };
+  var track = !!M_(l.model).track;
+  var o = { track: track, bay: track ? shown().length < spots() : fleet().length < bays(), cash: S.cash >= price, finance: [], reason: '' };
   [0.2, 0.35, 0.5].forEach(function (d) {
     var down = Math.round(price * d), principal = price - down;
     o.finance.push({ down: d, amount: down, ok: S.cash >= down && debt() + principal <= maxDebt(), credit: debt() + principal <= maxDebt() });
   });
   o.canFinance = o.finance.some(function (f) { return f.ok; });
-  if (!o.bay) o.reason = 'Every bay is full. Expand the garage or sell a car first.';
+  if (!o.bay) o.reason = track ? 'This is a race car, so it can only live in your private collection, and every display spot is taken (' + spots() + ' at your garage size). Expand, sell or return a car to the rental fleet first.' : 'Every rental bay is full. Expand the garage, retire a car to your private collection, or sell one first.';
   else if (!o.cash && !o.canFinance) o.reason = S.cash < price * MIN_DOWN ? 'You need at least ' + money(price * MIN_DOWN) + ' for a 20% down payment; you have ' + money(S.cash) + '.' : 'That would exceed your credit limit of ' + moneyS(maxDebt()) + ' in total loans.';
   o.action = !o.bay ? 'nobay' : o.cash ? 'buy' : o.canFinance ? 'finance' : 'none';
   return o;
@@ -306,8 +308,9 @@ function genListing(force) {
   else if (r < 0.76) f = rand(0.96, 1.05);
   else f = rand(1.07, 1.2);
   if (f < 0.85) tag = 'Hot deal'; else if (f > 1.12) tag = 'Overpriced';
+  if (M.track) tag = 'One of a kind';
   var hidden = !force.clean && Math.random() < (f < 0.86 ? 0.36 : 0.16) ? Math.round(market * rand(0.04, 0.1) / 100) * 100 : 0;
-  var paint = Math.random() < 0.45 ? M.color : PAINTS[randi(0, PAINTS.length - 1)][1];
+  var paint = M.livery || Math.random() < 0.45 ? M.color : PAINTS[randi(0, PAINTS.length - 1)][1];
   return {
     id: S.nextId++, model: key, trim: trim, year: year, miles: miles, cond: cond, color: paint,
     market: Math.round(market / 100) * 100, ask: Math.round(market * f / 100) * 100, hidden: hidden, inspected: false,
@@ -338,9 +341,9 @@ function analyze(l, price) {
   var M = MODELS[l.model], x = listingCar(l), comp = ownedInClass(M.cls);
   price = price || l.counter || l.ask;
   var known = l.inspected ? l.hidden : 0;
-  var cashP = project(x, { price: price, comp: comp, extraCost: known });
+  var cashP = project(x, { price: price, comp: comp, extraCost: known, display: M.track });
   var opts = purchaseOptions(l, price);
-  var fin = project(x, { price: price, comp: comp, extraCost: known, down: 0.2, term: 60, apr: apr(0.2) });
+  var fin = project(x, { price: price, comp: comp, extraCost: known, down: 0.2, term: 60, apr: apr(0.2), display: M.track });
   var discount = (l.market - price) / l.market;
   var exp = expectedMiles(M, l.year, S.week), mileRatio = l.miles / exp;
   // Risk: what could make this purchase go wrong
@@ -375,6 +378,13 @@ function analyze(l, price) {
 // Plain-English reasoning built from this listing's numbers and how it stacks up against the same model on the market
 function explain(a) {
   var l = a.l, M = a.M, c = a.cash, s = [];
+  if (M.track) {
+    s.push('At ' + money(a.price) + ', this is the one-of-a-kind AO Racing #80 “Rexy” race car, priced ' + (a.discount >= 0 ? pct(a.discount) + ' under' : pct(-a.discount) + ' over') + ' its estimated value.');
+    s.push('It isn’t street legal, so it can’t be rented: it goes straight into your private collection and costs about ' + money(c.opex) + '/mo to insure and maintain.');
+    s.push('The case for it is appreciation, roughly ' + money(c.valueChange) + ' a year, plus prestige for your reputation. It earns nothing in cash, so only buy it with money you won’t need for the business.');
+    if (!a.opts.bay) s.push('You need a free display spot first.');
+    return s.join(' ');
+  }
   var peers = S.market.filter(function (p) { return p.model === l.model && p.id !== l.id; });
   var name = M.name.replace('Corvette C8 Stingray', 'Corvette');
   var where = '';
@@ -425,9 +435,10 @@ function buy(l, price, downPct, months) {
   if (principal > 0 && debt() + principal > maxDebt()) return toast('The lender won’t extend that much credit. Put more down.');
   S.cash -= down;
   month().capex += down;
+  var track = !!M_(l.model).track;
   var car = {
     id: S.nextId++, model: l.model, trim: l.trim, year: l.year, miles: l.miles, cond: l.cond, color: l.color,
-    paid: price, bought: S.week, value: 0, listed: true, rate: refRate(l), wkRate: refWkRate(l),
+    paid: price, bought: S.week, value: 0, listed: !track, display: track, rate: refRate(l), wkRate: refWkRate(l),
     down: 0, serviced: S.week - 10, gross: 0, opex: 0, days: [], vh: [], wrap: false
   };
   if (l.hidden) {
@@ -450,7 +461,7 @@ function buy(l, price, downPct, months) {
   S.compare = S.compare.filter(function (id) { return id !== l.id; });
   if (S.tutorial === 1) S.tutorial = 2;
   checkAwards(); save();
-  toast('<b>' + esc(carName(l)) + '</b> is in bay ' + S.cars.length + ', listed at ' + money(car.rate) + '/day.');
+  toast(track ? '<b>' + esc(carName(l)) + '</b> is on display in your private collection.' : '<b>' + esc(carName(l)) + '</b> is in bay ' + fleet().length + ', listed at ' + money(car.rate) + '/day.');
   return car;
 }
 function sell(car) {
@@ -517,6 +528,7 @@ function advanceWeek() {
     var M = M_(c.model), comp = Math.max(0, (listedCount[M.cls] || 0) - (c.listed ? 1 : 0));
     var noise = Math.exp(gauss() * NOISE_SD), booked = [0, 0, 0, 0, 0, 0, 0], blocked = false;
     for (var d = 0; d < 7; d++) {
+      if (c.display) { booked[d] = 4; continue; }
       if (c.down > 0) { c.down--; booked[d] = 3; continue; }
       if (!c.listed) { booked[d] = 2; continue; }
       if (blocked) { blocked = false; booked[d] = 3; continue; }
@@ -536,7 +548,7 @@ function advanceWeek() {
     }
     c.days = c.days.concat(booked).slice(-28);
     // Unscheduled repairs: likelier on older, high-mileage, worn or recently neglected cars
-    var q = FAIL_BASE * repairMult(c) * (S.week - c.serviced < 8 ? 0.6 : 1);
+    var q = FAIL_BASE * repairMult(c) * (S.week - c.serviced < 8 ? 0.6 : 1) * (c.display ? COLLECTION_MAINT : 1);
     if (Math.random() < q) {
       var cost = Math.round(c.value * M.repair * 1.6 * rand(0.5, 1.5) / 50) * 50 + 200;
       sum.repairs += cost; c.opex += cost; c.down += randi(3, 7); c.cond = Math.max(30, c.cond - 3); if (c.listed) repDelta -= 0.04;
@@ -544,7 +556,7 @@ function advanceWeek() {
     }
     var ins = insMonthly(c, c.listed) / WEEKS_PER_MONTH, mt = maintMonthly(c) / WEEKS_PER_MONTH;
     sum.ins += ins; sum.maint += mt; c.opex += ins + mt;
-    c.cond = clamp(c.cond, 25, 100); c.miles += 25;
+    c.cond = clamp(c.cond, 25, 100); if (!c.display) c.miles += 25;
   });
   sum.garage = TIERS[S.tier].fee;
   var opex = sum.fees + sum.cleaning + sum.ins + sum.maint + sum.repairs + sum.garage;
@@ -588,6 +600,8 @@ function advanceWeek() {
   if (S.cars.length) {
     var avgCond = S.cars.reduce(function (t, c) { return t + c.cond; }, 0) / S.cars.length;
     repDelta += sum.days * (avgCond > 70 ? 0.0015 : 0.0005) - (avgCond < 60 ? 0.05 : 0);
+    // A curated collection on display adds a little prestige
+    shown().forEach(function (c) { repDelta += M_(c.model).cls === 'sports' ? 0.0015 : 0.003; });
   }
   S.rep = clamp(S.rep + repDelta, 1, 5);
 
@@ -637,6 +651,8 @@ var AWARDS = [
   { id: 'million', name: 'Seven Figures', desc: 'Reach $1,000,000 net worth.', test: function () { return netWorth() >= 1e6; } },
   { id: 'museum', name: 'Museum Curator', desc: 'Expand to the 20-bay Collector’s Museum.', test: function () { return S.tier >= 4; } },
   { id: 'debtfree', name: 'Debt Free', desc: 'Own 4+ cars with no loans outstanding.', test: function () { return S.cars.length >= 4 && S.loans.length === 0; } },
+  { id: 'curator', name: 'Private Curator', desc: 'Put 3 cars on display in your private collection.', test: function () { return shown().length >= 3; } },
+  { id: 'rexy', name: 'Rexy Roars', desc: 'Own the one-of-a-kind Porsche 911 GT3 R “Rexy”.', test: function () { return S.cars.some(function (c) { return c.model === 'rexy'; }); } },
   { id: 'empire', name: 'Automotive Empire', desc: 'Reach $5,000,000 net worth.', test: function () { return netWorth() >= GOAL; } }
 ];
 function unlock(id) {
@@ -738,6 +754,7 @@ function render() {
 
 /* ---------------- Garage view ---------------- */
 function carStatus(c) {
+  if (c.display) return '<span class="status display">On display</span>';
   if (c.down > 0) return '<span class="status service">In the shop</span>';
   if (!c.listed) return '<span class="status off">Off market</span>';
   var last = c.days.slice(-7), n = last.filter(function (x) { return x === 1; }).length;
@@ -745,44 +762,73 @@ function carStatus(c) {
   return n ? '<span class="status rented">Rented ' + n + '/7</span>' : '<span class="status idle">Idle</span>';
 }
 function util(c, n) { var d = c.days.slice(-(n || 28)).filter(function (x) { return x !== 2; }); return d.length ? d.filter(function (x) { return x === 1; }).length / d.length : 0; }
-function carProjection(c) { return project(c, { rate: c.rate, wkRate: c.wkRate, comp: ownedInClass(M_(c.model).cls, c.id), listed: c.listed, price: c.value }); }
+function carProjection(c) { return project(c, { rate: c.rate, wkRate: c.wkRate, comp: ownedInClass(M_(c.model).cls, c.id), listed: c.listed, display: c.display, price: c.value }); }
 VIEWS.garage = function () {
   var nw = netWorth(), next = TIERS[S.tier + 1];
   var img = [0.12, 0.2, 0.3, 0.42, 0.55][Math.min(S.tier, 4)];
-  var h = '<section class="hq" style="--hq-img:' + img + '"><p class="eyebrow">Headquarters · ' + S.cars.length + ' of ' + bays() + ' bays</p><h1>' + TIERS[S.tier].name + '</h1>' +
+  var h = '<section class="hq" style="--hq-img:' + img + '"><p class="eyebrow">Headquarters · ' + fleet().length + ' of ' + bays() + ' rental bays · ' + shown().length + ' of ' + spots() + ' display spots</p><h1>' + TIERS[S.tier].name + '</h1>' +
     '<div class="hq-meta"><div class="goal"><small><span>Net worth ' + money(nw) + '</span><span>Goal ' + moneyS(GOAL) + '</span></small><div class="bar"><span style="width:' + clamp(nw / GOAL * 100, 0, 100).toFixed(1) + '%"></span></div></div>' +
-    (next ? '<button class="btn' + (S.cars.length >= bays() ? ' gold' : '') + '" data-act="expand"' + (S.cash < next.cost ? ' disabled' : '') + '>Expand to ' + next.bays + ' bays · ' + moneyS(next.cost) + '</button>' : '<span class="chip gold">Fully expanded</span>') +
-    '</div></section><div class="bays">';
-  S.cars.forEach(function (c, i) {
+    (next ? '<button class="btn' + (fleet().length >= bays() ? ' gold' : '') + '" data-act="expand"' + (S.cash < next.cost ? ' disabled' : '') + '>Expand to ' + next.bays + ' bays · ' + moneyS(next.cost) + '</button>' : '<span class="chip gold">Fully expanded</span>') +
+    '</div></section><h2 class="sec-title">Rental fleet <small>' + fleet().length + ' of ' + bays() + ' bays</small></h2><div class="bays">';
+  fleet().forEach(function (c, i) {
     var M = M_(c.model), gain = c.value - c.paid, p = carProjection(c);
     h += '<button class="bay" data-act="car" data-id="' + c.id + '"><div class="bay-stage"><span class="bay-no">BAY ' + String(i + 1).padStart(2, '0') + '</span><span class="bay-status">' + carStatus(c) + '</span>' + car3d(c, c.color, 760, 410) + '</div>' +
       '<div class="plaque"><b>' + esc(M.make + ' ' + M.name) + '</b><span class="v num">' + moneyS(c.value) + '</span><small>' + c.year + ' · ' + Math.round(c.miles).toLocaleString() + ' mi · ' + pct(util(c)) + ' booked</small><small class="num ' + (gain >= 0 ? 'up' : 'down') + '" style="text-align:right">' + (gain >= 0 ? '+' : '') + moneyS(gain) + '</small>' +
       '<small>Est. NOI this month</small><small class="num ' + (p.now.noi >= 0 ? 'up' : 'down') + '" style="text-align:right">' + money(p.now.noi) + '</small>' +
       '<div class="mini-bar" title="Condition ' + Math.round(c.cond) + '%"><span style="width:' + c.cond + '%;background:' + (c.cond < 60 ? 'var(--red)' : c.cond < 75 ? '#f0a35a' : 'var(--gold)') + '"></span></div></div></button>';
   });
-  for (var i = S.cars.length; i < bays(); i++) h += '<button class="bay empty-bay" data-act="tab" data-tab="market"><span class="plus">+</span><b>Bay ' + String(i + 1).padStart(2, '0') + ' is empty</b><span>Visit the marketplace</span></button>';
-  if (next) h += '<button class="bay empty-bay locked" data-act="expand"' + (S.cash < next.cost ? ' disabled' : '') + '><span class="plus">🔒</span><b>' + next.name + '</b><span>' + (next.bays - bays()) + ' more bays · ' + money(next.cost) + ' · ' + money(next.fee) + '/wk upkeep</span></button>';
-  h += '</div>';
+  for (var i = fleet().length; i < bays(); i++) h += '<button class="bay empty-bay" data-act="tab" data-tab="market"><span class="plus">+</span><b>Bay ' + String(i + 1).padStart(2, '0') + ' is empty</b><span>Visit the marketplace</span></button>';
+  if (next) h += '<button class="bay empty-bay locked" data-act="expand"' + (S.cash < next.cost ? ' disabled' : '') + '><span class="plus">🔒</span><b>' + next.name + '</b><span>' + (next.bays - bays()) + ' more bays and ' + (COLLECTION_SPOTS[S.tier + 1] - spots()) + ' more display spot' + (COLLECTION_SPOTS[S.tier + 1] - spots() === 1 ? '' : 's') + ' · ' + money(next.cost) + ' · ' + money(next.fee) + '/wk upkeep</span></button>';
+  h += '</div>' + collectionHTML();
   if (S.news.length) h += '<section class="card panel" style="margin-top:20px"><h3>Garage news <small>Latest events</small></h3>' + S.news.slice(0, 4).map(function (n) { return '<div class="tip"><i>' + n.i + '</i><p><b>Week ' + n.w + '.</b> ' + esc(n.t) + '</p></div>'; }).join('') + '</section>';
   return h;
 };
+
+/* Private collection: cars you keep but no longer rent out. No bookings and no wear; cheaper storage insurance
+   and upkeep; values keep moving (collectibles appreciate); each car on display adds a little prestige. */
+function collectionHTML() {
+  var h = '<section class="collection"><h2 class="sec-title">Private collection <small>' + shown().length + ' of ' + spots() + ' display spots</small></h2>' +
+    '<p class="collection-note">Retired cars live here, off the rental market: storage insurance runs ' + pct(COLLECTION_INS) + ' of a rental policy, upkeep ' + pct(COLLECTION_MAINT) + ', there’s no wear, and each car on display adds a little prestige to your reputation. Values keep moving, so it’s the place for collectibles you want to hold. Retire a car from its page.</p><div class="bays">';
+  shown().forEach(function (c) {
+    var M = M_(c.model), gain = c.value - c.paid, p = carProjection(c);
+    h += '<button class="bay display" data-act="car" data-id="' + c.id + '"><div class="bay-stage"><span class="bay-no">' + esc(M.rarity.toUpperCase()) + '</span><span class="bay-status">' + carStatus(c) + '</span>' + car3d(c, c.color, 760, 410) + '</div>' +
+      '<div class="plaque"><b>' + esc(carName(c, true)) + '</b><span class="v num">' + moneyS(c.value) + '</span><small>' + (M.track ? 'Race car · display only' : 'Retired from rentals') + '</small><small class="num ' + (gain >= 0 ? 'up' : 'down') + '" style="text-align:right">' + (gain >= 0 ? '+' : '') + moneyS(gain) + ' since bought</small>' +
+      '<small>Holding cost / value change</small><small class="num" style="text-align:right">' + money(-p.opex) + '/mo · <span class="' + (p.valueChange >= 0 ? 'up' : 'down') + '">' + signed(p.valueChange) + '/yr</span></small></div></button>';
+  });
+  for (var i = shown().length; i < spots(); i++) h += '<div class="bay empty-bay plinth"><span class="plus">◇</span><b>Empty display spot</b><span>Open a car and choose “Retire to collection”</span></div>';
+  return h + '</div></section>';
+}
+function retire(c) {
+  if (shown().length >= spots()) return toast('Every display spot is taken (' + spots() + '). Expand the garage for more.');
+  c.display = true; c.listed = false; c.down = 0;
+  log('Retired ' + carName(c, true) + ' to the private collection', 0, 'Collection');
+  save(); toast('<b>' + esc(carName(c)) + '</b> is now on display. Bay freed up.');
+}
+function unretire(c) {
+  if (M_(c.model).track) return toast('It’s a race car: it can’t be rented on the street.');
+  if (fleet().length >= bays()) return toast('Every rental bay is full. Free one up first.');
+  c.display = false; c.listed = true;
+  log('Returned ' + carName(c, true) + ' to the rental fleet', 0, 'Collection');
+  save(); toast('<b>' + esc(carName(c)) + '</b> is back in the rental fleet.');
+}
 
 /* ---------------- Marketplace view ---------------- */
 function actionButton(a, l) {
   var o = a.opts;
   if (o.action === 'buy') return '<button class="btn gold sm" data-act="listing" data-id="' + l.id + '">Buy</button>';
   if (o.action === 'finance') return '<button class="btn gold sm" data-act="listing" data-id="' + l.id + '" title="Costs more than your cash: finance it">Finance</button>';
-  if (o.action === 'nobay') return '<button class="btn sm muted-btn" data-act="listing" data-id="' + l.id + '" title="' + esc(o.reason) + '">No free bay</button>';
+  if (o.action === 'nobay') return '<button class="btn sm muted-btn" data-act="listing" data-id="' + l.id + '" title="' + esc(o.reason) + '">' + (o.track ? 'No display spot' : 'No free bay') + '</button>';
   return '<button class="btn sm muted-btn" data-act="listing" data-id="' + l.id + '" title="' + esc(o.reason) + '">Insufficient funds</button>';
 }
 function listingCard(l, a) {
   var M = MODELS[l.model], disc = a.discount, c = a.cash;
-  var tagHTML = (l.tag ? '<span class="chip ' + (l.tag === 'Hot deal' ? 'good' : 'bad') + '" style="background:rgba(14,12,10,.8)">' + (l.tag === 'Hot deal' ? '🔥 ' : '') + l.tag + '</span>' : '') +
+  var tagHTML = (l.tag ? '<span class="chip ' + (l.tag === 'Hot deal' ? 'good' : l.tag === 'One of a kind' ? 'gold' : 'bad') + '" style="background:rgba(14,12,10,.8)">' + (l.tag === 'Hot deal' ? '🔥 ' : '') + l.tag + '</span>' : '') +
     '<span class="chip" style="background:rgba(14,12,10,.8)">' + l.weeks + ' wk' + (l.weeks === 1 ? '' : 's') + ' left</span>';
   return '<article class="card listing"><button class="bay-stage stage-btn" data-act="listing" data-id="' + l.id + '" aria-label="Inspect the ' + esc(carName(l, true)) + '"><div class="tagline">' + tagHTML + '</div>' + car3d(l, l.color, 760, 333) + '<span class="inspect-3d">⤢ Inspect in 3D</span></button><div class="l-body">' +
     '<div class="l-title"><div><b>' + esc(M.make + ' ' + M.name) + '</b><small>' + l.year + (M.trims.length > 1 ? ' ' + trimOf(l)[0] : '') + ' · ' + l.miles.toLocaleString() + ' mi · ' + condLabel(a.x.cond) + ' · ' + M.rarity + '</small></div>' +
     '<div class="price"><b class="num">' + money(a.price) + '</b><small class="' + (disc >= 0 ? 'up' : 'down') + '">' + (disc >= 0 ? pct(disc) + ' under' : pct(-disc) + ' over') + ' market</small></div></div>' +
-    '<div class="stats"><div><small>Market value</small><b class="num">' + moneyS(l.market) + '</b></div><div><small>Daily rate</small><b class="num">' + money(c.rate) + '</b></div><div><small>Bookings/mo</small><b class="num">' + c.days.toFixed(1) + ' days</b></div>' +
+    (M.track ? '<div class="stats"><div><small>Market value</small><b class="num">' + moneyS(l.market) + '</b></div><div><small>Use</small><b>Display only</b></div><div><small>Appreciation/yr</small><b class="num up">' + signed(c.valueChange) + '</b></div>' :
+    '<div class="stats"><div><small>Market value</small><b class="num">' + moneyS(l.market) + '</b></div><div><small>Daily rate</small><b class="num">' + money(c.rate) + '</b></div><div><small>Bookings/mo</small><b class="num">' + c.days.toFixed(1) + ' days</b></div>') +
     '<div><small>Revenue/mo</small><b class="num">' + money(c.gross) + '</b></div><div><small>Expenses/mo</small><b class="num">' + money(c.opex) + '</b></div><div><small>Net/mo</small><b class="num ' + (c.noi >= 0 ? 'up' : 'down') + '">' + money(c.noi) + '</b></div></div>' +
     '<div class="adv-line">' + ring(a.score) + '<p><b style="color:var(--ivory)">' + headline(a.score) + '.</b> ' + esc(shortReason(a)) + '</p></div>' +
     '<div class="l-actions"><label class="cmp"><input type="checkbox" data-act="compare" data-id="' + l.id + '"' + (S.compare.indexOf(l.id) >= 0 ? ' checked' : '') + '> Compare</label><button class="btn ghost sm" data-act="listing" data-id="' + l.id + '">Details</button>' + actionButton(a, l) + '</div>' +
@@ -800,10 +846,10 @@ VIEWS.market = function () {
   var h = '<div class="view-head"><div><p class="eyebrow">Used sports car market · refreshes weekly</p><h1>Marketplace</h1><p>Projections average the next 12 months of seasons at the suggested rate. Inspect before you buy, negotiate when a price looks rich, and finance what you can’t pay in cash.</p></div></div>' +
     '<div class="toolbar"><div class="seg">' + [['all', 'All'], ['afford', 'Within reach'], ['exotic', 'Exotic'], ['deals', 'Deals']].map(function (f) { return '<button class="' + (mFilter === f[0] ? 'on' : '') + '" data-act="mfilter" data-f="' + f[0] + '">' + f[1] + '</button>'; }).join('') + '</div>' +
     '<select data-input="msort" aria-label="Sort listings">' + [['score', 'adviser score'], ['cash', 'monthly net income'], ['roi', 'annual ROI'], ['discount', 'biggest discount'], ['price', 'price']].map(function (o) { return '<option value="' + o[0] + '"' + (mSort === o[0] ? ' selected' : '') + '>Sort: ' + o[1] + '</option>'; }).join('') + '</select>' +
-    '<span class="dim" style="font-size:.8rem;margin-left:auto">Cash ' + money(S.cash) + ' · Free bays ' + Math.max(0, bays() - S.cars.length) + ' · Credit left ' + moneyS(Math.max(0, maxDebt() - debt())) + '</span></div>' +
+    '<span class="dim" style="font-size:.8rem;margin-left:auto">Cash ' + money(S.cash) + ' · Free bays ' + Math.max(0, bays() - fleet().length) + ' · Display spots ' + Math.max(0, spots() - shown().length) + ' · Credit left ' + moneyS(Math.max(0, maxDebt() - debt())) + '</span></div>' +
     '<p class="season-note">' + monthLabel(monthKey(S.week), true) + ' rental demand vs. an average month: ' + seasonLine() + '</p>';
   h += list.length ? '<div class="market">' + list.map(function (l) { return listingCard(l, A[l.id]); }).join('') + '</div>' : '<div class="card empty">No listings match. New cars arrive every week.</div>';
-  h += '<p class="credit">3D models by <a href="https://sketchfab.com/ddiaz-design" target="_blank" rel="noopener">ddiaz-design</a> on Sketchfab (CC BY / CC BY-NC-SA), repainted for each listing.</p>';
+  h += '<p class="credit">3D models by <a href="https://sketchfab.com/ddiaz-design" target="_blank" rel="noopener">ddiaz-design</a> and <a href="https://sketchfab.com/VTX_car" target="_blank" rel="noopener">VTX</a> (Rexy) on Sketchfab (CC BY / CC BY-NC-SA), repainted for each listing.</p>';
   if (S.compare.length) h += '<div class="cmpbar"><span>' + S.compare.length + ' of 3 selected to compare</span><span style="display:flex;gap:8px"><button class="btn ghost sm" data-act="compare-clear">Clear</button><button class="btn gold sm" data-act="compare-open"' + (S.compare.length < 2 ? ' disabled' : '') + '>Compare ' + S.compare.length + '</button></span></div>';
   return h;
 };
@@ -825,15 +871,15 @@ function calendarHTML(c) {
   var d = c.days.slice(-28), pad = 28 - d.length, cells = '', start = dateOf(S.week - 4);
   for (var i = 0; i < 28; i++) {
     var v = i < pad ? null : d[i - pad], day = new Date(start.getTime() + i * 864e5).getDate();
-    cells += '<span class="' + (v === 1 ? 'b' : v === 2 ? 'o' : v === 3 ? 'x' : '') + '" title="' + (v === 1 ? 'Booked' : v === 2 ? 'Off market' : v === 3 ? 'Unavailable (shop or turnaround)' : v === 0 ? 'Available, not booked' : 'Not owned yet') + '">' + day + '</span>';
+    cells += '<span class="' + (v === 1 ? 'b' : v === 2 ? 'o' : v === 3 ? 'x' : v === 4 ? 'd' : '') + '" title="' + (v === 1 ? 'Booked' : v === 2 ? 'Off market' : v === 3 ? 'Unavailable (shop or turnaround)' : v === 4 ? 'On display' : v === 0 ? 'Available, not booked' : 'Not owned yet') + '">' + day + '</span>';
   }
   return '<div class="cal-head"><span>M</span><span>T</span><span>W</span><span>T</span><span>F</span><span>S</span><span>S</span></div><div class="cal">' + cells + '</div><div class="cal-key"><span><i class="b"></i>Booked</span><span><i class="x"></i>Unavailable</span><span><i></i>Open</span></div>';
 }
 VIEWS.rentals = function () {
   if (S.tutorial === 2) { S.tutorial = 3; save(); }
   var h = '<div class="view-head"><div><p class="eyebrow">Pricing & bookings</p><h1>Rentals</h1><p>Cheaper rates book more often; premium rates earn more per day. Demand follows the seasons (sports cars swing the most), your reputation, each car’s condition and age, and how many of your own cars compete in the same category.</p></div></div>';
-  if (!S.cars.length) return h + '<div class="card empty">No cars yet. <button class="btn gold sm" data-act="tab" data-tab="market" style="margin-left:8px">Go to the marketplace</button></div>';
-  h += '<p class="season-note">' + monthLabel(monthKey(S.week), true) + ': ' + seasonLine() + '</p><div class="rent-grid">' + S.cars.map(function (c) {
+  if (!fleet().length) return h + '<div class="card empty">' + (S.cars.length ? 'All your cars are in the private collection.' : 'No cars yet.') + ' <button class="btn gold sm" data-act="tab" data-tab="market" style="margin-left:8px">Go to the marketplace</button></div>';
+  h += '<p class="season-note">' + monthLabel(monthKey(S.week), true) + ': ' + seasonLine() + '</p><div class="rent-grid">' + fleet().map(function (c) {
     var M = M_(c.model);
     return '<article class="card rent"><div class="rent-car"><div class="bay-stage thumb">' + car3d(c, c.color, 520, 240) + '</div><b>' + esc(M.make + ' ' + M.name) + '</b><span class="dim" style="font-size:.76rem">' + carStatus(c) + ' &nbsp;Suggested ' + money(refRate(c)) + '/day · condition ' + Math.round(c.cond) + '%</span><button class="btn ghost sm" data-act="car" data-id="' + c.id + '">Manage car</button></div>' +
       rentalControls(c) + '<div><p class="eyebrow" style="margin-bottom:8px">Last 4 weeks · ' + pct(util(c)) + ' booked</p>' + calendarHTML(c) + '</div></article>';
@@ -941,13 +987,14 @@ function portfolioTips() {
     var pj = carProjection(c);
     if (S.week - c.bought > 26 && pj.noi < 150) tips.push(['$', name + ' is projected to earn only ' + money(pj.noi) + '/mo over the next year as age, mileage and repairs catch up. Selling it (' + money(c.value * SELL_SPREAD) + ') and buying a newer car may pay better.']);
     if (c.cond < 65) tips.push(['🔧', name + ' is at ' + Math.round(c.cond) + '% condition. A service (' + money(serviceCost(c)) + ') lifts demand and cuts breakdown risk.']);
-    if (!c.listed) tips.push(['⏸', name + ' is off the market. It still costs half insurance plus upkeep, and keeps depreciating.']);
+    if (!c.display && M.dep < 0 && c.days.length >= 14 && u < 0.2 && shown().length < spots()) tips.push(['◇', name + ' appreciates but rarely rents (' + pct(u) + '). Retiring it to your private collection would cut its holding cost to about ' + money(carProjection(Object.assign({}, c, { display: true, listed: false })).opex) + '/mo and free a rental bay.']);
+    if (!c.listed && !c.display) tips.push(['⏸', name + ' is off the market. It still costs half insurance plus upkeep, and keeps depreciating.']);
   });
   var mo = dateOf(S.week).getMonth();
   if (S.cars.length && (mo >= 10 || mo <= 1)) tips.push(['❄', 'Winter is the slow season, especially for sports cars. Keep a cash cushion for loan payments until spring.']);
   var hi = S.loans.filter(function (l) { return l.apr >= 0.08; });
   if (hi.length && S.cash > hi[0].balance + fixedMonthly() * 3) tips.push(['$', 'You have spare cash and a loan at ' + pct(hi[0].apr, 1) + '. Paying it off is a guaranteed return.']);
-  if (S.cars.length >= bays() && TIERS[S.tier + 1] && S.cash > TIERS[S.tier + 1].cost * 1.3) tips.push(['⌂', 'Every bay is full and you can afford to expand.']);
+  if (fleet().length >= bays() && TIERS[S.tier + 1] && S.cash > TIERS[S.tier + 1].cost * 1.3) tips.push(['⌂', 'Every bay is full and you can afford to expand.']);
   if (S.cars.length && S.cash < fixedMonthly() * 2) tips.push(['!', 'Your cash covers less than two months of fixed costs (' + money(fixedMonthly()) + '/mo). Hold off on buying.']);
   if (!tips.length) tips.push(['✓', 'Your fleet looks healthy. Watch the marketplace for listings scored 70+.']);
   return tips;
@@ -1056,15 +1103,27 @@ function carModal(c) {
   modalCtx = { type: 'car', id: c.id };
   var gain = c.value - c.paid, profit = c.gross - c.opex + gain;
   var spark = c.vh.length > 1 ? (function () { var mn = Math.min.apply(null, c.vh), mx = Math.max.apply(null, c.vh), rg = mx - mn || 1; return '<svg viewBox="0 0 200 40" class="chart" style="height:40px"><path d="' + c.vh.map(function (v, i) { return (i ? 'L' : 'M') + (i / (c.vh.length - 1) * 200).toFixed(1) + ',' + (36 - (v - mn) / rg * 32).toFixed(1); }).join('') + '" fill="none" stroke="#f0c983" stroke-width="2"/></svg>'; })() : '';
-  var h = head('Bay ' + String(S.cars.indexOf(c) + 1).padStart(2, '0') + ' · ' + c.year + ' · ' + CLASS_LABEL[M.cls], esc(carName(c)), Math.round(c.miles).toLocaleString() + ' miles · condition ' + Math.round(c.cond) + '% · owned ' + (S.week - c.bought) + ' weeks');
+  var where = c.display ? 'Private collection' : 'Bay ' + String(fleet().indexOf(c) + 1).padStart(2, '0');
+  var h = head(where + ' · ' + c.year + ' · ' + CLASS_LABEL[M.cls], esc(carName(c)), Math.round(c.miles).toLocaleString() + ' miles · condition ' + Math.round(c.cond) + '% · owned ' + (S.week - c.bought) + ' weeks');
   h += '<div class="m-body"><div class="m-hero">' + viewerHTML(c, c.color) + '</div><div class="m-cols">';
   h += '<div class="sec"><h4>Performance to date</h4><div class="kv"><span>Purchase price</span><b class="num">' + money(c.paid) + '</b><span>Current value</span><b class="num">' + money(c.value) + '</b><span>Value change (non-cash)</span><b class="num ' + (gain >= 0 ? 'up' : 'down') + '">' + signed(gain) + '</b><span class="sep"></span>' +
     '<span>Gross rental revenue</span><b class="num up">' + money(c.gross) + '</b><span>Operating expenses</span><b class="num down">' + money(-c.opex) + '</b><span>Net operating income</span><b class="num ' + (c.gross - c.opex >= 0 ? 'up' : 'down') + '">' + money(c.gross - c.opex) + '</b><span>Total return</span><b class="num ' + (profit >= 0 ? 'up' : 'down') + '">' + signed(profit) + ' (' + pct(profit / c.paid, 1) + ')</b>' +
     '<span>Utilization (4 wks)</span><b>' + pct(util(c)) + '</b>' + (loan ? '<span>Loan balance</span><b class="num">' + money(loan.balance) + '</b><span>Loan payment</span><b class="num">' + money(loan.mpay) + '/mo</b>' : '') + '</div>' + (spark ? '<p class="eyebrow" style="margin:14px 0 4px">Value history</p>' + spark : '') +
     '<h4 style="margin-top:16px">Condition</h4><div class="bar"><span style="width:' + c.cond + '%"></span></div><p class="dim" style="font-size:.78rem;margin-top:6px">Lower condition cuts demand and makes breakdowns likelier.</p>' +
     '<button class="btn sm" style="margin-top:8px" data-act="service" data-id="' + c.id + '">Service · ' + money(serviceCost(c)) + ' (+15%, 2 days in the shop)</button></div>';
-  h += '<div>' + econHTML(p, 'Next 12 months at your prices') + '<div class="sec" style="margin-top:14px"><h4>Rental pricing</h4>' + rentalControls(c) + '<p class="eyebrow" style="margin:14px 0 8px">Rental calendar · last 4 weeks</p>' + calendarHTML(c) +
-    '<h4 style="margin-top:16px">Customize · ' + money(WRAP_COST) + ' wrap</h4><div class="swatches">' + PAINTS.map(function (pp) { return '<button class="swatch' + (c.color === pp[1] ? ' on' : '') + '" style="background:' + pp[1] + '" title="' + pp[0] + '" aria-label="Wrap in ' + pp[0] + '" data-act="wrap" data-id="' + c.id + '" data-color="' + pp[1] + '"></button>'; }).join('') + '</div><p class="dim" style="font-size:.76rem;margin-top:6px">A fresh wrap adds 4% to rental demand.</p></div></div></div></div>';
+  var wrapHTML = M.livery ? '<p class="dim" style="font-size:.78rem;margin-top:14px">Its race livery stays as it is: no wraps on this one.</p>' :
+    '<h4 style="margin-top:16px">Customize · ' + money(WRAP_COST) + ' wrap</h4><div class="swatches">' + PAINTS.map(function (pp) { return '<button class="swatch' + (c.color === pp[1] ? ' on' : '') + '" style="background:' + pp[1] + '" title="' + pp[0] + '" aria-label="Wrap in ' + pp[0] + '" data-act="wrap" data-id="' + c.id + '" data-color="' + pp[1] + '"></button>'; }).join('') + '</div><p class="dim" style="font-size:.76rem;margin-top:6px">A fresh wrap adds 4% to rental demand.</p>';
+  if (c.display) {
+    var asRental = M.track ? null : project(c, { rate: c.rate, wkRate: c.wkRate, comp: ownedInClass(M.cls), price: c.value });
+    h += '<div>' + econHTML(p, 'Holding it · next 12 months') + '<div class="sec" style="margin-top:14px"><h4>Private collection</h4><p class="dim" style="font-size:.84rem">' +
+      (M.track ? 'A race car, so it can’t be rented. It stays on display, costs about ' + money(p.opex) + '/mo to store and maintain, and adds prestige.' :
+        'Off the rental market: storage insurance and light upkeep run about ' + money(p.opex) + '/mo. Back in the fleet it would net about ' + money(asRental.noi) + '/mo, but rack up miles and wear.') + '</p>' +
+      (M.track ? '' : '<button class="btn sm" style="margin-top:10px" data-act="unretire" data-id="' + c.id + '"' + (fleet().length >= bays() ? ' disabled title="Every rental bay is full"' : '') + '>Return to rental fleet</button>') + wrapHTML + '</div></div></div></div>';
+  } else {
+    h += '<div>' + econHTML(p, 'Next 12 months at your prices') + '<div class="sec" style="margin-top:14px"><h4>Rental pricing</h4>' + rentalControls(c) + '<p class="eyebrow" style="margin:14px 0 8px">Rental calendar · last 4 weeks</p>' + calendarHTML(c) +
+      '<h4 style="margin-top:16px">Private collection</h4><p class="dim" style="font-size:.8rem">Keep it but stop renting it: storage costs about ' + money(project(c, { display: true, price: c.value }).opex) + '/mo, no wear, and it frees this bay.</p><button class="btn sm" style="margin-top:8px" data-act="retire" data-id="' + c.id + '"' + (shown().length >= spots() ? ' disabled title="Every display spot is taken"' : '') + '>Retire to collection (' + (spots() - shown().length) + ' spot' + (spots() - shown().length === 1 ? '' : 's') + ' free)</button>' +
+      wrapHTML + '</div></div></div></div>';
+  }
   h += '<div class="m-foot"><div class="total"><small>Sell now (' + pct(SELL_SPREAD) + ' of value' + (loan ? ', after loan payoff' : '') + ')</small><b class="num">' + money(sale - (loan ? loan.balance : 0)) + '</b></div><div style="display:flex;gap:8px"><button class="btn danger" data-act="sell" data-id="' + c.id + '">Sell for ' + money(sale) + '</button><button class="btn gold" data-act="close">Done</button></div></div>';
   modal(h);
 }
@@ -1141,7 +1200,8 @@ function behindModal() {
     '<div class="sec"><h4>Rental economics</h4><p>Each car has a reference daily rate, a base booking rate, insurance, maintenance that rises with mileage, a repair risk that rises with age, mileage and wear, and a yearly depreciation rate (collectibles appreciate). Bookings are simulated day by day. Demand falls as you raise the price, follows the seasons (sports cars swing from ×0.55 in January to ×1.45 in July), drifts with market conditions, and depends on your reputation, the car’s condition and age, competition from your own fleet, and random week-to-week swings. Every rental pays a ' + pct(PLATFORM_FEE) + ' platform fee and cleaning, adds wear, sometimes blocks the next day for turnaround, and carries a small chance of renter damage (you pay the insurance deductible).</p></div>' +
     '<div class="sec"><h4>Cash vs. value</h4><p>Cash moves with rental revenue, operating expenses, monthly loan payments and purchases. Depreciation and appreciation change what your cars are worth, and so your net worth, but they are never charged as cash. The monthly income statement separates gross revenue, operating expenses, net operating income, loan payments and cash flow.</p></div>' +
     '<div class="sec"><h4>The AI adviser</h4><p>A transparent model rather than a black box. It runs the same 12-month projection the simulation uses, then scores price vs. market, cash yield, total return and risk. Open any listing and choose “Show the score breakdown”.</p></div>' +
-    '<div class="sec"><h4>The cars</h4><p>Every car is a real 3D model, the same ones in my portfolio garage, rendered with three.js and repainted per listing. Models by <a href="https://sketchfab.com/ddiaz-design" target="_blank" rel="noopener" style="color:var(--gold-2)">ddiaz-design</a> on Sketchfab (CC BY 4.0 and CC BY-NC-SA 4.0).</p></div>' +
+    '<div class="sec"><h4>The cars</h4><p>Every car is a real 3D model, the same ones in my portfolio garage, rendered with three.js and repainted per listing. Models by <a href="https://sketchfab.com/ddiaz-design" target="_blank" rel="noopener" style="color:var(--gold-2)">ddiaz-design</a>, and the “Rexy” Porsche 911 GT3 R by <a href="https://sketchfab.com/VTX_car" target="_blank" rel="noopener" style="color:var(--gold-2)">VTX</a>, on Sketchfab (CC BY 4.0 and CC BY-NC-SA 4.0).</p></div>' +
+    '<div class="sec"><h4>Private collection</h4><p>Cars you want to keep but no longer rent can be retired to a private collection. They stop earning and stop wearing out, cost far less to insure and maintain, keep changing in value, and add a little prestige. Race cars like Rexy can only live there.</p></div>' +
     '<p class="dim">Made by Adrien Pinilla, NYU Stern. <a href="index.html" style="color:var(--gold-2)">Visit my portfolio garage →</a></p></div><div class="m-foot"><span></span><button class="btn gold" data-act="close">Back to the game</button></div>');
 }
 
@@ -1205,6 +1265,8 @@ var ACT = {
   buy: function (d) { var l = findListing(d.id), car = buy(l, l.counter || l.ask, modalCtx.down, modalCtx.months); if (car) { tab = 'garage'; if (!(l.hidden && !l.inspected)) closeModal(); else render(); } },
   list: function (d, el) { var c = findCar(d.id); c.listed = el.checked; save(); if (modalCtx && modalCtx.type === 'car') carModal(c); else render(); },
   service: function (d) { var c = findCar(d.id); service(c); carModal(c); },
+  retire: function (d) { var c = findCar(d.id); retire(c); carModal(c); },
+  unretire: function (d) { var c = findCar(d.id); unretire(c); carModal(c); },
   wrap: function (d) { var c = findCar(d.id); if (c.color === d.color) return; wrap(c, d.color); carModal(c); },
   sell: function (d) {
     var c = findCar(d.id), btn = document.querySelector('[data-act="sell"]');

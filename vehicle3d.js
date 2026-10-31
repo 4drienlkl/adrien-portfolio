@@ -13,7 +13,20 @@ export var VEHICLES = {
   nsx: { file: 'nsx', paint: /^Acura.*Paint_Material$/, metal: 0.5 },
   sls: { file: 'sls', paint: /^SLSCarPaint$/, metal: 0.85 },
   c8: { file: 'c8', paint: /PaintTNR_Material$/, metal: 0.6 },
-  '488': { file: '488', paint: /^Main_Paint$/, metal: 0.35 }
+  '488': { file: '488', paint: /^Main_Paint$/, metal: 0.35 },
+  c911: { file: 'c911', paint: /^car_vpnt_/, metal: 0.6 },
+  gt3: { file: 'gt3', paint: /2022Paint_Material$/, metal: 0.5 },
+  gtr: { file: 'gtr', paint: /^CarPaint$/, metal: 0.7 },
+  huracan: { file: 'huracan', paint: /2014Paint_Material$/, metal: 0.5 },
+  m570s: { file: 'm570s', paint: /^fullM_CarPaint_Max/, metal: 0.5 },
+  r8: { file: 'r8', paint: /2023Paint_Material1$/, metal: 0.6 },
+  i8: { file: 'i8', paint: /2017Paint_Material1$/, metal: 0.5 },
+  amggt: { file: 'amggt', paint: /2015Paint_Material1$/, metal: 0.6 },
+  viper: { file: 'viper', paint: /^CarPaint_AO_1$/, metal: 0.5 },
+  emira: { file: 'emira', paint: /Lotus_Emira_2022_Base1$/, metal: 0.5 },
+  // Race car in its original "Rexy" livery: the paint is a printed texture, so it is never recoloured
+  // Its body, chassis and cabin are flagged see-through in the file, which breaks depth sorting; draw them solid
+  rexy: { file: 'rexy', paint: null, metal: 0.5, opaque: /^(Body|Chassis|Interior)$/ }
 };
 export var CAR_LENGTH = 4.5; // every model is scaled to this length, nose toward +z
 
@@ -74,7 +87,8 @@ export function paintCar(fit, spec, color) {
   fit.traverse(function (o) {
     if (!o.isMesh) return;
     var m = o.material;
-    if (m.name === 'paint' || spec.paint.test(m.name)) { o.material = paint; return; }
+    if (m.name === 'paint' || (spec.paint && spec.paint.test(m.name))) { o.material = paint; return; }
+    if (spec.opaque && spec.opaque.test(m.name)) { m.transparent = false; m.depthWrite = true; m.opacity = 1; }
     // Glass: drop the expensive refraction pass and keep a tinted see-through look
     if (m.transmission) { m.transmission = 0; m.transparent = true; m.opacity = Math.max(m.opacity, 0.32); m.depthWrite = false; }
     if (/tyre|tire|styre|interior|carp|seat/i.test(m.name)) m.metalness = Math.min(m.metalness, 0.1);
