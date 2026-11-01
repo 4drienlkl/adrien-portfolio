@@ -47,28 +47,33 @@ var CLASS_LABEL = { sports: 'Sports', exotic: 'Exotic', collectible: 'Collectibl
    value: market value of a typical example (refYear, normal mileage, good condition) when the game starts · perYear: normal miles per year
    rate: reference daily rate · demand: chance a weekday books at that rate in an average month · lift: weekend boost
    elastic: how sharply bookings fall as you raise the price · ins / maint: monthly · repair: expected unscheduled repairs per year as a share of value
-   dep: yearly depreciation (negative = appreciation) · trims: [name, value premium, rate premium, first year] */
+   dep: yearly depreciation (negative = appreciation), slowing after year five · floor: the value a decent example bottoms out at
+   years: [first, last] model year, last = null while still in production (a new model year arrives each fall)
+   release: 'YYYY-MM' when a model first reaches the market (later arrivals) · trims: [name, value premium, rate premium, first year] */
 var MODELS = {
-  c8:   { make: 'Chevrolet', name: 'Corvette C8 Stingray', v3d: 'c8', cls: 'sports', value: 66000, refYear: 2022, years: [2020, 2025], perYear: 5000, rate: 420, demand: 0.36, lift: 1.5, elastic: 1.6, ins: 330, maint: 140, repair: 0.015, dep: 0.06, clean: 30, deductible: 2500, rarity: 'Common', weight: 3, color: '#1f6fe0', trims: [['1LT', 0, 0], ['2LT', 0.07, 0.03], ['3LT', 0.13, 0.06]] },
-  nsx:  { make: 'Acura', name: 'NSX', v3d: 'nsx', cls: 'exotic', exotic: true, value: 128000, refYear: 2019, years: [2017, 2021], perYear: 3500, rate: 700, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 520, maint: 240, repair: 0.018, dep: 0.05, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.5, color: '#c9cdd2', trims: [['Coupe', 0, 0]] },
-  nsxs: { make: 'Acura', name: 'NSX Type S', v3d: 'nsx', cls: 'collectible', exotic: true, value: 185000, refYear: 2022, years: [2022, 2022], perYear: 2500, rate: 850, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 620, maint: 280, repair: 0.015, dep: -0.03, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 1, color: '#e0520f', trims: [['Type S', 0, 0]] },
-  f488: { make: 'Ferrari', name: '488 GTB', v3d: '488', cls: 'exotic', exotic: true, value: 205000, refYear: 2018, years: [2016, 2019], perYear: 2500, rate: 1200, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 800, maint: 450, repair: 0.022, dep: 0.03, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1.3, color: '#d40000', trims: [['GTB', 0, 0]] },
-  sls:  { make: 'Mercedes-Benz', name: 'SLS AMG', v3d: 'sls', cls: 'collectible', exotic: true, value: 235000, refYear: 2012, years: [2011, 2014], perYear: 2000, rate: 1000, demand: 0.19, lift: 1.7, elastic: 1.3, ins: 600, maint: 420, repair: 0.018, dep: -0.04, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 1, color: '#c9cdd2', trims: [['Coupe', 0, 0], ['GT', 0.1, 0.04, 2013]] },
-  c911: { make: 'Porsche', name: '911 Carrera', v3d: 'c911', cls: 'sports', value: 105000, refYear: 2021, years: [2019, 2025], perYear: 4500, rate: 520, demand: 0.31, lift: 1.5, elastic: 1.5, ins: 380, maint: 210, repair: 0.014, dep: 0.05, clean: 30, deductible: 2500, rarity: 'Common', weight: 2.4, color: '#c9cdd2', trims: [['Carrera', 0, 0], ['Carrera S', 0.12, 0.05], ['Carrera 4S', 0.18, 0.07]] },
-  gtr:  { make: 'Nissan', name: 'GT-R', v3d: 'gtr', cls: 'sports', value: 88000, refYear: 2017, years: [2013, 2021], perYear: 5000, rate: 500, demand: 0.31, lift: 1.5, elastic: 1.5, ins: 420, maint: 290, repair: 0.02, dep: 0.03, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 2, color: '#1c1c1e', trims: [['Premium', 0, 0], ['Black Edition', 0.08, 0.03]] },
-  amggt: { make: 'Mercedes-AMG', name: 'GT', v3d: 'amggt', cls: 'sports', value: 84000, refYear: 2018, years: [2016, 2021], perYear: 4000, rate: 480, demand: 0.29, lift: 1.5, elastic: 1.5, ins: 380, maint: 290, repair: 0.019, dep: 0.08, clean: 30, deductible: 2500, rarity: 'Common', weight: 2, color: '#f2c230', trims: [['GT', 0, 0], ['GT S', 0.12, 0.04]] },
-  i8:   { make: 'BMW', name: 'i8', v3d: 'i8', cls: 'sports', value: 62000, refYear: 2018, years: [2015, 2020], perYear: 4000, rate: 400, demand: 0.27, lift: 1.5, elastic: 1.6, ins: 320, maint: 230, repair: 0.022, dep: 0.09, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 1.8, color: '#eef0f2', trims: [['Coupe', 0, 0]] },
-  emira: { make: 'Lotus', name: 'Emira', v3d: 'emira', cls: 'sports', value: 96000, refYear: 2024, years: [2023, 2025], perYear: 4000, rate: 450, demand: 0.27, lift: 1.5, elastic: 1.5, ins: 360, maint: 240, repair: 0.016, dep: 0.07, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 1.6, color: '#2f7d4f', trims: [['V6 First Edition', 0, 0]] },
-  r8:   { make: 'Audi', name: 'R8', v3d: 'r8', cls: 'exotic', exotic: true, value: 155000, refYear: 2020, years: [2017, 2023], perYear: 3000, rate: 950, demand: 0.25, lift: 1.7, elastic: 1.3, ins: 650, maint: 400, repair: 0.02, dep: 0.04, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.6, color: '#5a6068', trims: [['V10', 0, 0], ['V10 Performance', 0.12, 0.05, 2020], ['GT RWD', 0.3, 0.08, 2023]] },
-  huracan: { make: 'Lamborghini', name: 'Huracán', v3d: 'huracan', cls: 'exotic', exotic: true, value: 215000, refYear: 2017, years: [2015, 2019], perYear: 2500, rate: 1400, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 900, maint: 600, repair: 0.023, dep: 0.03, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1.4, color: '#f2c230', trims: [['LP610-4', 0, 0]] },
-  m570s: { make: 'McLaren', name: '570S', v3d: 'm570s', cls: 'exotic', exotic: true, value: 135000, refYear: 2018, years: [2016, 2021], perYear: 2500, rate: 950, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 720, maint: 580, repair: 0.03, dep: 0.08, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.2, color: '#ff7a1a', trims: [['Coupe', 0, 0]] },
-  gt3:  { make: 'Porsche', name: '911 GT3', v3d: 'gt3', cls: 'collectible', exotic: true, value: 220000, refYear: 2023, years: [2022, 2024], perYear: 2500, rate: 1000, demand: 0.21, lift: 1.7, elastic: 1.3, ins: 700, maint: 380, repair: 0.014, dep: -0.02, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1, color: '#c9cdd2', trims: [['GT3', 0, 0], ['Touring', 0.02, 0]] },
-  viper: { make: 'Dodge', name: 'Viper ACR', v3d: 'viper', cls: 'collectible', value: 160000, refYear: 2016, years: [2016, 2017], perYear: 1500, rate: 750, demand: 0.2, lift: 1.6, elastic: 1.4, ins: 520, maint: 330, repair: 0.02, dep: -0.05, clean: 35, deductible: 2500, rarity: 'Collectible', weight: 0.8, color: '#c8102e', trims: [['ACR', 0, 0]] },
+  c8:   { floor: 45000, make: 'Chevrolet', name: 'Corvette C8 Stingray', v3d: 'c8', cls: 'sports', value: 66000, refYear: 2022, years: [2020, null], perYear: 5000, rate: 420, demand: 0.36, lift: 1.5, elastic: 1.6, ins: 330, maint: 140, repair: 0.015, dep: 0.06, clean: 30, deductible: 2500, rarity: 'Common', weight: 3, color: '#1f6fe0', trims: [['1LT', 0, 0], ['2LT', 0.07, 0.03], ['3LT', 0.13, 0.06]] },
+  nsx:  { floor: 80000, make: 'Acura', name: 'NSX', v3d: 'nsx', cls: 'exotic', exotic: true, value: 128000, refYear: 2019, years: [2017, 2021], perYear: 3500, rate: 700, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 520, maint: 240, repair: 0.018, dep: 0.05, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.5, color: '#c9cdd2', trims: [['Coupe', 0, 0]] },
+  nsxs: { floor: 150000, make: 'Acura', name: 'NSX Type S', v3d: 'nsx', cls: 'collectible', exotic: true, value: 185000, refYear: 2022, years: [2022, 2022], perYear: 2500, rate: 850, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 620, maint: 280, repair: 0.015, dep: -0.03, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 1, color: '#e0520f', trims: [['Type S', 0, 0]] },
+  f488: { floor: 160000, make: 'Ferrari', name: '488 GTB', v3d: '488', cls: 'exotic', exotic: true, value: 205000, refYear: 2018, years: [2016, 2019], perYear: 2500, rate: 1200, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 800, maint: 450, repair: 0.022, dep: 0.03, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1.3, color: '#d40000', trims: [['GTB', 0, 0]] },
+  sls:  { floor: 175000, make: 'Mercedes-Benz', name: 'SLS AMG', v3d: 'sls', cls: 'collectible', exotic: true, value: 235000, refYear: 2012, years: [2011, 2014], perYear: 2000, rate: 1000, demand: 0.19, lift: 1.7, elastic: 1.3, ins: 600, maint: 420, repair: 0.018, dep: -0.04, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 1, color: '#c9cdd2', trims: [['Coupe', 0, 0], ['GT', 0.1, 0.04, 2013]] },
+  c911: { floor: 68000, make: 'Porsche', name: '911 Carrera', v3d: 'c911', cls: 'sports', value: 105000, refYear: 2021, years: [2019, null], perYear: 4500, rate: 520, demand: 0.31, lift: 1.5, elastic: 1.5, ins: 380, maint: 210, repair: 0.014, dep: 0.05, clean: 30, deductible: 2500, rarity: 'Common', weight: 2.4, color: '#c9cdd2', trims: [['Carrera', 0, 0], ['Carrera S', 0.12, 0.05], ['Carrera 4S', 0.18, 0.07]] },
+  gtr:  { floor: 55000, make: 'Nissan', name: 'GT-R', v3d: 'gtr', cls: 'sports', value: 88000, refYear: 2017, years: [2013, 2021], perYear: 5000, rate: 500, demand: 0.31, lift: 1.5, elastic: 1.5, ins: 420, maint: 290, repair: 0.02, dep: 0.03, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 2, color: '#1c1c1e', trims: [['Premium', 0, 0], ['Black Edition', 0.08, 0.03]] },
+  amggt: { floor: 52000, make: 'Mercedes-AMG', name: 'GT', v3d: 'amggt', cls: 'sports', value: 84000, refYear: 2018, years: [2016, 2021], perYear: 4000, rate: 480, demand: 0.29, lift: 1.5, elastic: 1.5, ins: 380, maint: 290, repair: 0.019, dep: 0.08, clean: 30, deductible: 2500, rarity: 'Common', weight: 2, color: '#f2c230', trims: [['GT', 0, 0], ['GT S', 0.12, 0.04]] },
+  i8:   { floor: 38000, make: 'BMW', name: 'i8', v3d: 'i8', cls: 'sports', value: 62000, refYear: 2018, years: [2015, 2020], perYear: 4000, rate: 400, demand: 0.27, lift: 1.5, elastic: 1.6, ins: 320, maint: 230, repair: 0.022, dep: 0.09, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 1.8, color: '#eef0f2', trims: [['Coupe', 0, 0]] },
+  emira: { floor: 60000, make: 'Lotus', name: 'Emira', v3d: 'emira', cls: 'sports', value: 96000, refYear: 2024, years: [2023, null], perYear: 4000, rate: 450, demand: 0.27, lift: 1.5, elastic: 1.5, ins: 360, maint: 240, repair: 0.016, dep: 0.07, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 1.6, color: '#2f7d4f', trims: [['V6 First Edition', 0, 0]] },
+  r8:   { floor: 95000, make: 'Audi', name: 'R8', v3d: 'r8', cls: 'exotic', exotic: true, value: 155000, refYear: 2020, years: [2017, 2023], perYear: 3000, rate: 950, demand: 0.25, lift: 1.7, elastic: 1.3, ins: 650, maint: 400, repair: 0.02, dep: 0.04, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.6, color: '#5a6068', trims: [['V10', 0, 0], ['V10 Performance', 0.12, 0.05, 2020], ['GT RWD', 0.3, 0.08, 2023]] },
+  huracan: { floor: 160000, make: 'Lamborghini', name: 'Huracán', v3d: 'huracan', cls: 'exotic', exotic: true, value: 215000, refYear: 2017, years: [2015, 2019], perYear: 2500, rate: 1400, demand: 0.24, lift: 1.7, elastic: 1.3, ins: 900, maint: 600, repair: 0.023, dep: 0.03, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1.4, color: '#f2c230', trims: [['LP610-4', 0, 0]] },
+  m570s: { floor: 95000, make: 'McLaren', name: '570S', v3d: 'm570s', cls: 'exotic', exotic: true, value: 135000, refYear: 2018, years: [2016, 2021], perYear: 2500, rate: 950, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 720, maint: 580, repair: 0.03, dep: 0.08, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.2, color: '#ff7a1a', trims: [['Coupe', 0, 0]] },
+  gt3:  { floor: 175000, make: 'Porsche', name: '911 GT3', v3d: 'gt3', cls: 'collectible', exotic: true, value: 220000, refYear: 2023, years: [2022, null], perYear: 2500, rate: 1000, demand: 0.21, lift: 1.7, elastic: 1.3, ins: 700, maint: 380, repair: 0.014, dep: -0.02, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1, color: '#c9cdd2', trims: [['GT3', 0, 0], ['Touring', 0.02, 0]] },
+  viper: { floor: 110000, make: 'Dodge', name: 'Viper ACR', v3d: 'viper', cls: 'collectible', value: 160000, refYear: 2016, years: [2016, 2017], perYear: 1500, rate: 750, demand: 0.2, lift: 1.6, elastic: 1.4, ins: 520, maint: 330, repair: 0.02, dep: -0.05, clean: 35, deductible: 2500, rarity: 'Collectible', weight: 0.8, color: '#c8102e', trims: [['ACR', 0, 0]] },
   // One of a kind: AO Racing's "Rexy" race car. It isn't street legal, so it can't be rented; it lives in your private collection.
-  rexy: { make: 'Porsche', name: '911 GT3 R “Rexy”', v3d: 'rexy', cls: 'collectible', exotic: true, track: true, livery: true, value: 750000, refYear: 2023, years: [2023, 2023], perYear: 400, rate: 0, demand: 0, lift: 1, elastic: 1, ins: 900, maint: 2500, repair: 0.01, dep: -0.07, clean: 0, deductible: 10000, rarity: 'One of a kind', weight: 0.12, color: '#2fae5a', trims: [['AO Racing #80', 0, 0]] }
+  rexy: { floor: 600000, make: 'Porsche', name: '911 GT3 R “Rexy”', v3d: 'rexy', cls: 'collectible', exotic: true, track: true, livery: true, value: 750000, refYear: 2023, years: [2023, 2023], perYear: 400, rate: 0, demand: 0, lift: 1, elastic: 1, ins: 900, maint: 2500, repair: 0.01, dep: -0.07, clean: 0, deductible: 10000, rarity: 'One of a kind', weight: 0.12, color: '#2fae5a', trims: [['AO Racing #80', 0, 0]] }
 };
 function M_(k) { return MODELS[k]; }
-var MARKET_MODELS = Object.keys(MODELS);
+function released(k, week) { var r = MODELS[k].release; return !r || monthKey(week == null ? S.week : week) >= r; }
+// Model years on sale: in-production cars gain next year's model each September
+function lastYear(M, week) { var d = dateOf(week == null ? S.week : week); return M.years[1] != null ? M.years[1] : d.getFullYear() + (d.getMonth() >= 8 ? 1 : 0); }
+function marketModels() { return Object.keys(MODELS).filter(function (k) { return MODELS[k].weight > 0 && released(k); }); }
 var PAINTS = [
   ['Rosso Corsa', '#d40000'], ['Valencia Red', '#b3101e'], ['Thermal Orange', '#e0520f'], ['Rapid Blue', '#1f6fe0'], ['Iridium Silver', '#c9cdd2'],
   ['Nero', '#1c1c1e'], ['Bianco', '#eef0f2'], ['Giallo', '#f2c230'], ['British Green', '#2f7d4f'], ['Gunmetal', '#5a6068']
@@ -108,7 +113,7 @@ function newGame() {
     trend: { sports: 1, exotic: 1, collectible: 1 },   // market values
     demand: { sports: 1, exotic: 1, collectible: 1 },  // rental market conditions
     mods: { ins: 1, heat: 0, show: 0 },
-    awards: {}, tutorial: 0, negWeeks: 0, over: null, won: false, compare: []
+    awards: {}, tutorial: 0, negWeeks: 0, over: null, won: false, compare: [], released: []
   };
   seedMarket();
   log('Opened the garage with ' + money(START_CASH), START_CASH, 'Capital');
@@ -123,6 +128,7 @@ function load() {
     S = s;
     if (S.v === 1) migrateV1();
     if (S.v === 2) { S.cars.forEach(function (c) { c.display = !!c.display; }); S.v = 3; save(); } // v3 adds the private collection
+    if (!S.released) S.released = Object.keys(MODELS).filter(function (k) { return MODELS[k].release && released(k); });
     return true;
   } catch (e) { return false; }
 }
@@ -155,13 +161,21 @@ function month(w) {
 
 /* ---------------- Valuation ---------------- */
 function expectedMiles(M, year, week) { return Math.max(500, (gameYear(week) - year + 0.5) * M.perYear); }
+// Share of value kept after `age` years: full depreciation for five years, then it slows to 40% of the rate
+function retained(dep, age) { age = Math.max(0, age); return Math.pow(1 - dep, Math.min(age, 5)) * Math.pow(1 - dep * 0.4, Math.max(0, age - 5)); }
 function valueOf(x, week) {
   var M = M_(x.model);
-  var age = (M.refYear - x.year) + week / 52;
-  var ageF = Math.pow(1 - M.dep, age);
+  var base;
+  if (M.dep > 0) base = M.value * retained(M.dep, gameYear(week) - x.year) / retained(M.dep, 2027 - M.refYear);
+  // Collectibles appreciate with the calendar, whatever the model year
+  else base = M.value * Math.pow(1 - M.dep, week / 52) * (1 + 0.02 * (x.year - M.refYear));
   var mileF = clamp(1 - (x.miles - expectedMiles(M, x.year, week)) / 100000 * 0.35, 0.6, 1.15);
   var condF = clamp(0.7 + 0.3 * x.cond / 85, 0.75, 1.06);
-  return M.value * ageF * mileF * condF * (1 + trimOf(x)[1]) * (S.trend[M.cls] || 1);
+  var trim = 1 + trimOf(x)[1], trend = S.trend[M.cls] || 1;
+  var v = base * mileF * condF * trim * trend;
+  // Good examples bottom out: buyers won't let a decent car fall below its floor
+  var floor = (M.floor || 0) * trim * clamp(condF * mileF, 0.92, 1.05) * Math.min(1, trend);
+  return Math.max(v, floor);
 }
 function ageOf(x, week) { return Math.max(0, gameYear(week == null ? S.week : week) - x.year); }
 
@@ -291,13 +305,18 @@ function purchaseOptions(l, price) {
 /* ---------------- Marketplace ---------------- */
 function genListing(force) {
   force = force || {};
-  var key = force.model || pickW(MARKET_MODELS, function (k) { return MODELS[k].weight; });
+  // Variety: models already on the lot are less likely to appear again; new arrivals get a launch push
+  var key = force.model || pickW(marketModels(), function (k) {
+    var listed = S.market.filter(function (l) { return l.model === k; }).length;
+    var fresh = MODELS[k].release && S.week - weekOfMonth(MODELS[k].release) < 26 ? 3 : 1;
+    return MODELS[k].weight * fresh / (1 + listed * 1.5);
+  });
   var M = MODELS[key];
-  var year = randi(M.years[0], M.years[1]);
+  var hiYear = lastYear(M), year = force.newest ? hiYear : randi(M.years[0], hiYear);
   var trims = M.trims.map(function (t, i) { return i; }).filter(function (i) { return !M.trims[i][3] || year >= M.trims[i][3]; });
   var trim = trims[randi(0, trims.length - 1)];
   var exp = expectedMiles(M, year, S.week);
-  var miles = Math.max(300, Math.round(exp * Math.exp(gauss() * 0.4) / 10) * 10);
+  var miles = Math.max(300, Math.round(clamp(exp * Math.exp(gauss() * 0.4), exp * 0.35, exp * 1.9) / 10) * 10);
   var cond = Math.round(clamp(rand(72, 97) - (miles / exp - 1) * 9 - ageOf({ year: year }) * 0.6, 50, 99));
   var x = { model: key, trim: trim, year: year, miles: miles, cond: cond };
   var market = valueOf(x, S.week);
@@ -313,8 +332,8 @@ function genListing(force) {
   var paint = M.livery || Math.random() < 0.45 ? M.color : PAINTS[randi(0, PAINTS.length - 1)][1];
   return {
     id: S.nextId++, model: key, trim: trim, year: year, miles: miles, cond: cond, color: paint,
-    market: Math.round(market / 100) * 100, ask: Math.round(market * f / 100) * 100, hidden: hidden, inspected: false,
-    reserve: Math.round(market * f * (f > 1.08 ? rand(0.85, 0.93) : f < 0.9 ? rand(0.96, 1) : rand(0.9, 0.97)) / 100) * 100,
+    market: Math.round(market / 100) * 100, ask: Math.round(Math.max(market * f, (M.floor || 0) * 0.9) / 100) * 100, hidden: hidden, inspected: false,
+    reserve: Math.round(Math.max(market * f * (f > 1.08 ? rand(0.85, 0.93) : f < 0.9 ? rand(0.96, 1) : rand(0.9, 0.97)), (M.floor || 0) * 0.88) / 100) * 100,
     weeks: force.weeks || randi(2, 5), tag: tag, offered: false, counter: null
   };
 }
@@ -327,11 +346,26 @@ function seedMarket() {
   ];
   while (S.market.length < 7) S.market.push(genListing());
 }
+function weekOfMonth(key) { var p = key.split('-'), d = new Date(+p[0], +p[1] - 1, 1); return Math.round((d - START_DATE) / (7 * 864e5)); }
+// New models reach the market on their release month, with a couple of fresh listings and a headline
+function releaseArrivals(sum) {
+  S.released = S.released || [];
+  Object.keys(MODELS).forEach(function (k) {
+    var M = MODELS[k];
+    if (!M.release || S.released.indexOf(k) >= 0 || !released(k)) return;
+    S.released.push(k);
+    for (var i = 0; i < 2; i++) { var l = genListing({ model: k, newest: i === 0, f: rand(1.0, 1.08), weeks: 5 }); l.tag = 'New arrival'; S.market.unshift(l); }
+    var e = { i: '✦', t: 'New arrival: the ' + M.make + ' ' + M.name + ' just reached the market. Early listings carry a launch premium, and renters are curious.' };
+    if (sum) sum.events.push(e);
+    S.news.unshift({ w: S.week, i: e.i, t: e.t }); if (S.news.length > 12) S.news.length = 12;
+  });
+}
 function refreshMarket() {
   S.market.forEach(function (l) { l.weeks--; });
   S.market = S.market.filter(function (l) { return l.weeks > 0; });
   var target = randi(7, 9), adds = 0;
   while (S.market.length < target && adds < 4) { S.market.push(genListing()); adds++; }
+  if (S.market.length > 11) S.market.length = 11;
   if (!S.market.some(function (l) { return l.model === 'c8'; })) S.market.push(genListing({ model: 'c8' }));
 }
 
@@ -577,6 +611,7 @@ function advanceWeek() {
   S.week++;
   // Monthly: loan payments fall due on the 1st, and market conditions drift
   if (monthKey(S.week) !== monthKey(S.week - 1)) {
+    releaseArrivals(sum);
     var nm = month();
     S.loans.forEach(function (l) {
       var interest = l.balance * l.apr / 12, princ = Math.min(l.balance, l.mpay - interest);
@@ -822,7 +857,7 @@ function actionButton(a, l) {
 }
 function listingCard(l, a) {
   var M = MODELS[l.model], disc = a.discount, c = a.cash;
-  var tagHTML = (l.tag ? '<span class="chip ' + (l.tag === 'Hot deal' ? 'good' : l.tag === 'One of a kind' ? 'gold' : 'bad') + '" style="background:rgba(14,12,10,.8)">' + (l.tag === 'Hot deal' ? '🔥 ' : '') + l.tag + '</span>' : '') +
+  var tagHTML = (l.tag ? '<span class="chip ' + (l.tag === 'Hot deal' ? 'good' : l.tag === 'One of a kind' || l.tag === 'New arrival' ? 'gold' : 'bad') + '" style="background:rgba(14,12,10,.8)">' + (l.tag === 'Hot deal' ? '🔥 ' : '') + l.tag + '</span>' : '') +
     '<span class="chip" style="background:rgba(14,12,10,.8)">' + l.weeks + ' wk' + (l.weeks === 1 ? '' : 's') + ' left</span>';
   return '<article class="card listing"><button class="bay-stage stage-btn" data-act="listing" data-id="' + l.id + '" aria-label="Inspect the ' + esc(carName(l, true)) + '"><div class="tagline">' + tagHTML + '</div>' + car3d(l, l.color, 760, 333) + '<span class="inspect-3d">⤢ Inspect in 3D</span></button><div class="l-body">' +
     '<div class="l-title"><div><b>' + esc(M.make + ' ' + M.name) + '</b><small>' + l.year + (M.trims.length > 1 ? ' ' + trimOf(l)[0] : '') + ' · ' + l.miles.toLocaleString() + ' mi · ' + condLabel(a.x.cond) + ' · ' + M.rarity + '</small></div>' +
