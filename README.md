@@ -1,6 +1,6 @@
 # Adrien Pinilla · The Garage
 
-Personal portfolio site. The home page is a 3D garage, in the style of a racing game's car select: each car is a section of my portfolio. Click the car (or press Enter) to pop the hood, and that section opens from the engine bay. The driver figure standing beside the turntable (black and gray suit, gold accents, #27) opens the driver profile. There's also a listening room upstairs, where the records and the On Rotation tape play Apple Music previews.
+Personal portfolio site. The home page is a 3D garage, in the style of a racing game's car select: each car is a section of my portfolio. Click the car (or press Enter) to pop the hood, and that section opens from the engine bay. The driver figure standing beside the turntable (black and gray suit, gold accents, #27) opens the driver profile, where the camera swings over to the driver and his race car, the Porsche 911 GT3 R "Rexy". More of the collection (Huracán, 911, 570S, GT-R, Viper) is parked in the background; those cars load after the first car so the page still opens quickly. There's also a listening room upstairs, where the records and the On Rotation tape play Apple Music previews.
 
 | Car | Section |
 |---|---|

@@ -170,6 +170,8 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 .toast.show { opacity: 1; transform: translate(-50%, 0); }
 .hood .toast, .dim .toast { opacity: 0; }
 .dim #gl { filter: brightness(.45); transition: filter .5s; }
+.dim.profile #gl { filter: brightness(.9); } /* the driver profile shows off the driver and his race car */
+.profile .hud.car { opacity: 0; pointer-events: none; }
 
 /* ================= Detail panel ================= */
 .panel {
@@ -480,6 +482,6 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }
 </script>
-<script type="module" src="garage.js"></script>
+<script type="module" src="garage.js?v=10"></script>
 </body>
 </html>

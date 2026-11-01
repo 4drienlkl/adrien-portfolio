@@ -287,6 +287,53 @@ function placeDriver() {
   var v = homeView(), az = Math.atan2(v.pos.x, v.pos.z) + (phone.matches ? 2.85 : 2.62), r = 4.5;
   driver.position.set(Math.sin(az) * r, 0, Math.cos(az) * r);
   driver.rotation.y = Math.atan2(v.pos.x - driver.position.x, v.pos.z - driver.position.z) + 0.25;
+  driver.userData.az = az;
+  if (rexy) placeRexy();
+}
+
+/* ---------- More of the collection: cars parked around the studio, and the driver's own race car ----------
+   They load after the first car, from the same models Garage Tycoon uses (vehicle3d.js), and sit in the dim
+   background on their own pools of light. [model, paint, angle around the room (0 = +z), heading tweak] */
+var ROW = phone.matches
+  ? [['c911', '#c9cdd2', 4.05, 0.5], ['m570s', '#ff7a1a', 4.5, 0.45]]
+  : [['huracan', '#f2c230', 4.0, 0.55], ['c911', '#3a3f47', 4.38, 0.5], ['m570s', '#ff7a1a', 4.76, 0.45], ['gtr', '#8a9099', 5.14, 0.4], ['viper', '#c8102e', 2.5, -0.5]];
+var ROW_R = 10.4;
+var parkPool = radial('rgba(255,226,180,0.13)', 'rgba(255,226,180,0)');
+function parkCar(file, color) {
+  return loadCar(file).then(function (g) {
+    var model = new THREE.Group(), fit = g.scene;
+    model.add(fit);
+    fitCar(fit, model);
+    paintCar(fit, VEHICLES[file], color);
+    var spot = new THREE.Group();
+    var lit = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 7.5), new THREE.MeshBasicMaterial({ map: parkPool, transparent: true, depthWrite: false }));
+    lit.rotation.x = -Math.PI / 2; lit.position.y = 0.003;
+    var sh = shadow.clone(); sh.position.y = 0.005;
+    spot.add(lit, sh, model);
+    scene.add(spot);
+    return spot;
+  });
+}
+function parkRow() {
+  ROW.reduce(function (chain, r) {
+    return chain.then(function () {
+      return parkCar(r[0], r[1]).then(function (spot) {
+        spot.position.set(Math.sin(r[2]) * ROW_R, 0, Math.cos(r[2]) * ROW_R);
+        spot.rotation.y = r[2] + Math.PI + r[3]; // nose toward the turntable, turned a little for a three-quarter view
+      }).catch(function () {});
+    });
+  }, Promise.resolve());
+}
+// Rexy, the driver's race car, parks just behind the figure
+var rexy = null, rexyLoading = null;
+function placeRexy() {
+  var az = driver.userData.az + (phone.matches ? 0.28 : 0.34), r = 7.3;
+  rexy.position.set(Math.sin(az) * r, 0, Math.cos(az) * r);
+  rexy.rotation.y = az + Math.PI + 1.0; // parked side-on behind the figure, nose toward the viewer's right
+}
+function loadRexy() {
+  if (!rexyLoading) rexyLoading = parkCar('rexy', '#ffffff').then(function (spot) { rexy = spot; placeRexy(); return spot; });
+  return rexyLoading;
 }
 
 /* ---------- Cars ---------- */
@@ -680,16 +727,44 @@ function closePanel() {
 function openSheet(s) {
   if (busy) return;
   if (hoodOpen) closeHood(true);
+  if (sheet === 'about' && s !== ABOUT) leaveProfile();
   sheet = s.id;
   fillPanel(s);
   body.classList.add('dim');
+  if (s === ABOUT) showProfile();
   openPanel();
   history.replaceState(null, '', '#' + s.id);
+}
+// Frame the driver figure and his race car, from a side angle that keeps the turntable out of the way
+function profileView() {
+  var d = driver.position, az = driver.userData.az;
+  var mid = rexy ? d.clone().lerp(rexy.position, phone.matches ? 0.4 : 0.32) : d.clone();
+  mid.y = 0.9;
+  var camAz = az - (phone.matches ? 0.8 : 0.62), r = phone.matches ? 11.2 : 12.2; // stay inside the slatted back wall (radius 13)
+  return { pos: new THREE.Vector3(Math.sin(camAz) * r, phone.matches ? 3.4 : 2.6, Math.cos(camAz) * r), target: mid };
+}
+function showProfile() {
+  idleSpin = false; controls.enabled = false;
+  body.classList.add('profile');
+  // Wait briefly for the race car on a slow connection, then go anyway (it rolls in when ready)
+  Promise.race([loadRexy().catch(function () {}), new Promise(function (r) { setTimeout(r, 1500); })]).then(function () {
+    if (sheet !== 'about') return;
+    moveCamera(profileView(), 1500);
+    shiftTo(hoodShift(), 1500);
+  });
+}
+function leaveProfile() {
+  body.classList.remove('profile');
+  Promise.all([moveCamera(homeView(), 1200), shiftTo(restShift(), 1200)]).then(function () {
+    if (sheet === 'about' || hoodOpen) return;
+    controls.enabled = true; idleSpin = !still;
+  });
 }
 function back() {
   if (body.classList.contains('room-open')) return leaveRoom();
   if (sheet) {
     var was = sheet; sheet = null;
+    if (was === 'about') leaveProfile();
     closePanel();
     history.replaceState(null, '', '#' + current.c.id);
     var btn = was === 'contact' ? $('contact-btn') : document.querySelector('#picker [data-id="' + was + '"]');
@@ -970,6 +1045,7 @@ var deep = location.hash.slice(1), at = CARS.findIndex(function (c) { return c.i
 show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   if (!current) return;
   var door = openShutter();
+  setTimeout(function () { parkRow(); if (!phone.matches) loadRexy().catch(function () {}); }, door + 400);
   // The camera rolls in as the door goes up
   moveCamera(homeView(), Math.max(1800, door)).then(function () {
     if (at >= 0) openHood();
