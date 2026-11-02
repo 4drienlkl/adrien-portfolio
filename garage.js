@@ -102,7 +102,7 @@ var CONTACT = {
 var TAPES = [
   { title: 'On Rotation', tape: '#c8102e', tracks: [
     ['My Beautiful Dark Twisted Fantasy', 'Kanye West · 2010', '', 1443160699],
-    ['Graduation', 'Kanye West · 2007', '', 1442846712],
+    ['Graduation', 'Kanye West · 2007', '', 1442846328],
     ['Charm', 'Clairo · 2024', '', 1742301428],
     ['Bewitched', 'Laufey · 2023', '', 1690609217],
     ['Happier Than Ever', 'Billie Eilish · 2021', '', 1564530710]
@@ -119,14 +119,19 @@ var TAPES = [
     ['Fashion & hospitality', '', 'Two industries I follow closely, and part of why Arête and hospitality are on my list.']
   ]}
 ];
-// [album, artist, sleeve colour, label text, Apple Music ID of the track that plays]
+// [album, artist, sleeve colour, label text, Apple Music ID of the track the needle drops on, Apple Music album ID]
 var ALBUMS = [
-  ['My Beautiful Dark Twisted Fantasy', 'Kanye West', '#c4161c', 'MBDTF', 1443160699],
-  ['Graduation', 'Kanye West', '#b34fc0', 'Graduation', 1442846712],
-  ['Charm', 'Clairo', '#8f9057', 'Charm', 1742301428],
-  ['Bewitched', 'Laufey', '#7d93bd', 'Bewitched', 1690609217],
-  ['Happier Than Ever', 'Billie Eilish', '#c9b48a', 'Happier Than Ever', 1564530710]
+  ['My Beautiful Dark Twisted Fantasy', 'Kanye West', '#c4161c', 'MBDTF', 1443160699, 1443160553],
+  ['Graduation', 'Kanye West', '#b34fc0', 'Graduation', 1442846328, 1442845779],
+  ['Charm', 'Clairo', '#8f9057', 'Charm', 1742301428, 1742301413],
+  ['Bewitched', 'Laufey', '#7d93bd', 'Bewitched', 1690609217, 1690607869],
+  ['Happier Than Ever', 'Billie Eilish', '#c9b48a', 'Happier Than Ever', 1564530710, 1564530526]
 ];
+// Background music downstairs: previews from the records, shuffled
+// (Runaway, Power, All of the Lights · Stronger, Good Life, Flashing Lights, I Wonder · Juna, Slow Dance, Sexy to Someone ·
+//  From The Start, Bewitched, Promise · Happier Than Ever, Billie Bossa Nova, my future)
+var RADIO = [1443160699, 1443160563, 1443160568, 1442846328, 1442846347, 1442846712, 1442846336, 1742301428, 1742301419, 1742301417,
+  1690609217, 1690609674, 1690608935, 1564530710, 1564530530, 1564530531];
 
 /* ---------- Renderer, studio and turntable ---------- */
 var $ = function (id) { return document.getElementById(id); };
@@ -735,6 +740,7 @@ function startCar(car, sound) {
   aimLamps(car);
   var id = ++ignition, at = (ENGINES[car.c.file] || { catch: 0.6 }).catch;
   setLamps(0);
+  if (sound && soundOn()) radioDip(4500);
   // Wait for the recording to begin so the lamps come up as its engine fires
   (sound ? coldStart(car.c.file) : Promise.resolve()).then(function () {
     if (id === ignition && current === car) lightUp(at);
@@ -1003,18 +1009,24 @@ function sync() {
 }
 
 /* ---------- Music: Apple Music's 30-second previews ---------- */
-var SONGS = {}, songsReady = null, onSongEnd = null;
+var SONGS = {}, SIDES = [], songsReady = null, onSongEnd = null; // SIDES[album] = its tracks in order, [{ id, name }]
 var audio = new Audio();
 audio.volume = 0.85;
 audio.addEventListener('ended', function () { if (onSongEnd) onSongEnd(); });
 function loadSongs() {
   if (!songsReady) {
-    songsReady = fetch('https://itunes.apple.com/lookup?id=' + ALBUMS.map(function (a) { return a[4]; }).join(','))
+    // Every track on every record, in one request
+    songsReady = fetch('https://itunes.apple.com/lookup?entity=song&limit=200&id=' + ALBUMS.map(function (a) { return a[5]; }).join(','))
       .then(function (r) { return r.json(); })
       .then(function (d) {
         d.results.forEach(function (r) {
-          if (r.previewUrl) SONGS[r.trackId] = { src: r.previewUrl, url: r.trackViewUrl, name: r.trackName.replace(/ \(feat\..*\)$/, '') };
+          if (r.wrapperType !== 'track' || !r.previewUrl) return;
+          var name = r.trackName.replace(/ \(feat\..*\)$/, '').replace(/ \[Bonus Track\]$/, '');
+          SONGS[r.trackId] = { src: r.previewUrl, url: r.trackViewUrl, name: name, artist: r.artistName };
+          var i = ALBUMS.findIndex(function (a) { return a[5] === r.collectionId; });
+          if (i >= 0) (SIDES[i] = SIDES[i] || []).push({ id: r.trackId, name: name, n: r.discNumber * 100 + r.trackNumber });
         });
+        SIDES.forEach(function (side) { side.sort(function (a, b) { return a.n - b.n; }); });
       })
       .catch(function (e) { songsReady = null; throw e; });
   }
@@ -1033,6 +1045,59 @@ function playSong(id, done) {
 function stopSong() { onSongEnd = null; audio.pause(); }
 function appleLink(s) { return '<a href="' + s.url + '" target="_blank" rel="noopener">Full song on Apple Music ↗</a>'; }
 
+/* ---------- Radio: the records, quietly, while you look around downstairs ---------- */
+var radio = new Audio(), radioOn = true, radioStarted = false, radioOrder = [], radioAt = -1, radioDuck = 1, radioLevel = 0, radioTimer = null;
+try { radioOn = localStorage.getItem('garage-music') !== 'off'; } catch (e) {}
+radio.volume = 0;
+radio.addEventListener('ended', function () { radioNext(); });
+function radioWanted() { return radioOn && radioStarted && !document.hidden && !body.classList.contains('room-open'); }
+function radioNext() {
+  if (!radioOrder.length) radioOrder = RADIO.slice().sort(function () { return Math.random() - 0.5; });
+  var s = null;
+  for (var tries = 0; !s && tries < radioOrder.length; tries++) { radioAt = (radioAt + 1) % radioOrder.length; s = SONGS[radioOrder[radioAt]]; }
+  if (!s) return;
+  radio.src = s.src;
+  var now = $('radio-now');
+  now.href = s.url; now.textContent = '♫ ' + s.name + ' · ' + s.artist; now.title = s.name + ' by ' + s.artist + ' · 30-sec preview · Full song on Apple Music';
+  radioUpdate();
+}
+// Fade in and out at the ends of each preview, and dip under the engine when a car starts
+function radioFade() {
+  var t = radio.currentTime, d = radio.duration || 30;
+  var want = radioWanted() && !radio.paused ? 0.22 * radioDuck * Math.min(1, t / 1.5, (d - t) / 2) : 0;
+  radioLevel += (want - radioLevel) * 0.25;
+  radio.volume = Math.max(0, Math.min(1, radioLevel));
+}
+function radioUpdate() {
+  body.classList.toggle('radio-playing', radioWanted() && !!radio.src);
+  $('music-btn').setAttribute('aria-pressed', radioOn ? 'true' : 'false');
+  $('music-btn').setAttribute('aria-label', radioOn ? 'Background music on' : 'Background music off');
+  $('music-btn').classList.toggle('off', !radioOn);
+  if (!radioWanted()) { radio.pause(); clearInterval(radioTimer); radioTimer = null; radioLevel = 0; radio.volume = 0; return; }
+  if (!radio.src) return loadSongs().then(radioNext).catch(function () {});
+  radio.play().catch(function () {});
+  if (!radioTimer) radioTimer = setInterval(radioFade, 50);
+}
+function radioDip(ms) {
+  radioDuck = 0.3;
+  clearTimeout(radioDip.t);
+  radioDip.t = setTimeout(function () { radioDuck = 1; }, ms);
+}
+// Browsers only allow sound after the visitor interacts, so the radio starts on the first click or key press
+function radioStart() {
+  if (radioStarted) return;
+  radioStarted = true;
+  radioUpdate();
+}
+['pointerdown', 'keydown'].forEach(function (ev) { document.addEventListener(ev, radioStart, { once: true, capture: true }); });
+document.addEventListener('visibilitychange', radioUpdate);
+$('music-btn').addEventListener('click', function () {
+  radioOn = !radioOn;
+  try { localStorage.setItem('garage-music', radioOn ? 'on' : 'off'); } catch (e) {}
+  radioStarted = true;
+  radioUpdate();
+});
+
 /* ---------- Listening room ---------- */
 var tt = $('tt'), deck = $('deck'), label = $('label'), spinning = -1;
 function openRoom() {
@@ -1040,7 +1105,7 @@ function openRoom() {
   stopEngine();
   loadSongs().catch(function () {});
   body.classList.add('room-open');
-  sync();
+  sync(); radioUpdate();
   history.replaceState(null, '', '#room');
   $('room-close').focus({ preventScroll: true });
 }
@@ -1048,7 +1113,7 @@ function leaveRoom() {
   stopRecord();
   if (deck.classList.contains('open')) eject();
   body.classList.remove('room-open');
-  sync();
+  sync(); radioUpdate();
   history.replaceState(null, '', '#' + current.c.id);
   var b = document.querySelector('#picker [data-id="room"]');
   if (b) b.focus({ preventScroll: true });
@@ -1062,47 +1127,71 @@ function toggleLid(force) {
 }
 function stopRecord(note) {
   if (spinning < 0) return;
-  spinning = -1;
+  spinning = -1; needle = 0;
   stopSong();
   tt.classList.remove('playing');
   $('crate').querySelectorAll('.on').forEach(function (o) { o.classList.remove('on'); });
   $('now').textContent = note || 'Pick a record from the crate.';
+  sideList();
 }
 tt.addEventListener('click', function () { toggleLid(); });
 tt.addEventListener('keydown', function (e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); toggleLid(); } });
 
-ALBUMS.forEach(function (a) {
+var needle = 0; // the track playing on the record that's spinning
+// The record's track list under the player: pick any song, and it plays on through the side from there
+function sideList() {
+  var list = $('side-list'), side = SIDES[spinning];
+  if (spinning < 0 || !side) { list.innerHTML = ''; list.hidden = true; return; }
+  list.hidden = false;
+  list.innerHTML = '<small>' + ALBUMS[spinning][0] + ' · pick a song</small><ol>' + side.map(function (t, n) {
+    return '<li><button data-id="' + t.id + '"' + (t.id === needle ? ' aria-current="true"' : '') + '><span>' + (n + 1) + '</span>' + t.name + '</button></li>';
+  }).join('') + '</ol>';
+  var on = list.querySelector('[aria-current]');
+  if (on) on.scrollIntoView({ block: 'nearest' });
+}
+$('side-list').addEventListener('click', function (e) {
+  var b = e.target.closest('button[data-id]');
+  if (b && spinning >= 0) putOn(spinning, +b.dataset.id);
+});
+function putOn(i, id) {
+  var a = ALBUMS[i], sleeve = $('crate').querySelectorAll('.sleeve-mini')[i];
+  stopRecord();
+  sleeve.classList.add('on');
+  label.style.setProperty('--lbl', a[2]);
+  $('label-text').textContent = a[3];
+  toggleLid(true);
+  spinning = i; needle = id;
+  $('now').innerHTML = 'Dropping the needle on <b>' + a[0] + '</b>…';
+  playSong(id, function () {
+    // Preview over: on to the next song on the record
+    var side = SIDES[i] || [], k = side.findIndex(function (t) { return t.id === id; });
+    if (k >= 0 && k < side.length - 1) putOn(i, side[k + 1].id); else stopRecord('That’s the end of the record. Pick another.');
+  })
+    .then(function (s) {
+      if (spinning !== i || needle !== id) return;
+      tt.classList.add('playing');
+      $('now').innerHTML = '♪ <b>' + s.name + '</b> · ' + a[1] + ' · 30-sec preview<br>' + appleLink(s);
+      sideList();
+    })
+    .catch(function () {
+      if (spinning !== i || needle !== id) return;
+      spinning = -1;
+      sleeve.classList.remove('on');
+      $('now').textContent = 'Couldn’t reach Apple Music. Try again in a moment.';
+    });
+}
+ALBUMS.forEach(function (a, i) {
   var b = document.createElement('button');
   b.className = 'sleeve-mini';
   b.style.setProperty('--s', 'linear-gradient(145deg,' + a[2] + ', #1a1a1a)');
   b.setAttribute('aria-label', 'Put on ' + a[0] + ' by ' + a[1]);
   b.addEventListener('click', function () {
-    var i = ALBUMS.indexOf(a);
     // Same record again: lift the needle, or drop it back
     if (spinning === i) {
       if (audio.paused) { audio.play(); tt.classList.add('playing'); } else { audio.pause(); tt.classList.remove('playing'); }
       return;
     }
-    stopRecord();
-    $('crate').querySelectorAll('.on').forEach(function (o) { o.classList.remove('on'); });
-    b.classList.add('on');
-    label.style.setProperty('--lbl', a[2]);
-    $('label-text').textContent = a[3];
-    toggleLid(true);
-    spinning = i;
-    $('now').innerHTML = 'Dropping the needle on <b>' + a[0] + '</b>…';
-    playSong(a[4], function () { stopRecord('That’s the preview. Pick another record.'); })
-      .then(function (s) {
-        if (spinning !== i) return;
-        tt.classList.add('playing');
-        $('now').innerHTML = '♪ <b>' + s.name + '</b> · ' + a[1] + ' · 30-sec preview<br>' + appleLink(s);
-      })
-      .catch(function () {
-        if (spinning !== i) return;
-        spinning = -1;
-        b.classList.remove('on');
-        $('now').textContent = 'Couldn’t reach Apple Music. Try again in a moment.';
-      });
+    putOn(i, a[4]);
   });
   $('crate').appendChild(b);
 });
@@ -1202,4 +1291,4 @@ show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   setTimeout(function () { toast.classList.add('show'); }, door + 300);
   setTimeout(function () { toast.classList.remove('show'); }, door + 5600);
 });
-window.__garage = { driver: driver, home: homeView, audio: audio, scene: scene, camera: camera, renderer: renderer, get current() { return current; }, show: show, openHood: openHood, closeHood: closeHood, turntable: turntable, controls: controls };
+window.__garage = { driver: driver, home: homeView, audio: audio, radio: radio, scene: scene, camera: camera, renderer: renderer, get current() { return current; }, show: show, openHood: openHood, closeHood: closeHood, turntable: turntable, controls: controls };

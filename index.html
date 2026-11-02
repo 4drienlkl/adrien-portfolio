@@ -119,6 +119,9 @@ a { color: inherit; }
 .hud.id h1 { font: 700 2.1rem/1 var(--cond); letter-spacing: .04em; text-transform: uppercase; margin-top: 6px; }
 .hud.id p { font-size: .82rem; color: var(--muted); margin-top: 6px; }
 .hud.top { right: 22px; top: 20px; display: flex; gap: 8px; }
+.radio-now { max-width: 260px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; display: none !important; color: var(--muted); }
+.radio-playing .radio-now { display: block !important; }
+#music-btn.off { opacity: .55; text-decoration: line-through; }
 .pill { font: 600 .8rem/1 var(--cond); letter-spacing: .16em; text-transform: uppercase; background: var(--hud); padding: 10px 13px; border: 1px solid var(--line); backdrop-filter: blur(6px); -webkit-backdrop-filter: blur(6px); text-decoration: none; display: inline-flex; align-items: center; gap: 6px; transition: border-color .2s, color .2s; }
 a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber); }
 .key { display: inline-grid; place-items: center; min-width: 20px; height: 20px; padding: 0 6px; border-radius: 10px; background: var(--ivory); color: #111; margin-right: 8px; font: 600 .66rem/1 var(--cond); letter-spacing: .06em; }
@@ -269,6 +272,15 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 .sleeve-mini:hover, .sleeve-mini.on { transform: translateY(-5px); }
 .sleeve-mini.on { box-shadow: 0 0 0 2px var(--amber), 0 4px 10px rgba(0, 0, 0, .5); }
 .now { font-size: .78rem; color: var(--muted); margin-top: 10px; min-height: 1.3em; }
+.side-list { width: 380px; margin-top: 12px; }
+.side-list small { display: block; font: 600 .7rem/1 var(--cond); letter-spacing: .2em; text-transform: uppercase; color: var(--muted); margin-bottom: 6px; }
+.side-list ol { list-style: none; max-height: 168px; overflow-y: auto; border-top: 1px solid var(--line); scrollbar-width: thin; }
+.side-list button { display: flex; gap: 10px; width: 100%; padding: 6px 4px; text-align: left; font-size: .8rem; color: var(--body); border-bottom: 1px solid var(--line); }
+.side-list button span { width: 18px; flex: none; font: 600 .74rem/1.5 var(--cond); color: var(--muted); }
+.side-list button:hover { color: var(--amber); }
+.side-list button[aria-current] { color: var(--amber); background: linear-gradient(90deg, rgba(224, 168, 94, .16), transparent); }
+.side-list button[aria-current] span::before { content: "▶"; font-size: .6rem; }
+.side-list button[aria-current] span { font-size: 0; }
 .now b { color: var(--ivory); font-weight: 500; }
 .now a, .tracks .via a { color: var(--amber); }
 .tracks .via { font-size: .74rem; color: #8a5a2b; margin-top: 2px; }
@@ -323,13 +335,15 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 /* ================= Phone ================= */
 @media (max-width: 760px) {
   .hud.id { padding: 16px; }
-  .hud.id h1 { font-size: 1.5rem; }
+  .hud.id h1 { font-size: 1.35rem; }
   .hud.id p, .hud.id small { display: none; }
   .hud.id { padding-top: 22px; }
   .panel-open .hud.id, .panel-open .hud.top { opacity: 0; pointer-events: none; }
-  .hud.top { right: 12px; top: 14px; gap: 6px; }
-  .hud.top .pill { padding: 9px 10px; }
+  .hud.top { right: 10px; top: 14px; gap: 4px; }
+  .hud.top .pill { padding: 9px 9px; letter-spacing: .08em; }
+  #music-btn, #sound-btn { padding: 9px 6px; }
   .hud.top .wide-only { display: none; }
+  .radio-playing .hud.top .radio-now { display: none !important; }
   .hud.car { left: 16px; right: 16px; top: auto; bottom: 128px; transform: none; width: auto; }
   .hood .hud.car { transform: translateY(20px); }
   .car-head { gap: 10px; }
@@ -409,6 +423,8 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
   <a class="pill wide-only" href="tycoon.html" title="A sports car rental business game">▶ Play Tycoon</a>
   <a class="pill wide-only" href="classic.html" title="The whole portfolio on one scrolling page">Quick view</a>
   <button class="pill" id="contact-btn">Contact</button>
+  <a class="pill radio-now wide-only" id="radio-now" target="_blank" rel="noopener"></a>
+  <button class="pill" id="music-btn" title="Background music" aria-pressed="true" aria-label="Background music on">♫</button>
   <button class="pill" id="sound-btn" title="Engine sounds" aria-pressed="true" aria-label="Engine sounds on">🔊</button>
 </div>
 <div class="toast" id="toast" role="status" aria-live="polite"></div>
@@ -445,6 +461,7 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
       </div>
       <div class="crate" id="crate"><small>Crate</small></div>
       <p class="now" id="now" aria-live="polite">Pick a record from the crate.</p>
+      <div class="side-list" id="side-list" hidden></div>
     </div>
     <div class="notes">
       <small>Liner notes · Side B</small>
@@ -483,6 +500,6 @@ a.pill:hover, button.pill:hover { border-color: var(--amber); color: var(--amber
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }
 </script>
-<script type="module" src="garage.js?v=26"></script>
+<script type="module" src="garage.js?v=27"></script>
 </body>
 </html>
