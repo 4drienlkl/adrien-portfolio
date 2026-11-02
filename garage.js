@@ -292,12 +292,16 @@ function placeDriver() {
 }
 
 /* ---------- More of the collection: cars parked around the studio, and the driver's own race car ----------
-   They load after the first car, from the same models Garage Tycoon uses (vehicle3d.js), and sit in the dim
-   background on their own pools of light. [model, paint, angle around the room (0 = +z), heading tweak] */
-var ROW = phone.matches
-  ? [['c911', '#c9cdd2', 4.05, 0.5], ['m570s', '#ff7a1a', 4.5, 0.45]]
-  : [['huracan', '#f2c230', 4.0, 0.55], ['c911', '#3a3f47', 4.38, 0.5], ['m570s', '#ff7a1a', 4.76, 0.45], ['gtr', '#8a9099', 5.14, 0.4], ['viper', '#c8102e', 2.5, -0.5],
-     ['gt4rs', '#00a6d6', 5.52, 0.35], ['f296', '#d40000', 5.9, 0.3], ['lfa', '#eef0f2', 2.12, -0.45], ['revuelto', '#6fbe2e', 1.74, -0.4]];
+   Each chapter has its own cars in the dim background, from the same models Garage Tycoon uses (vehicle3d.js).
+   A chapter's cars load the first time it opens (so the page only downloads what's shown) and stay for next time.
+   ROWS[chapter] = [[model, paint], ...] fills SLOTS in order: [angle around the room (0 = +z), heading tweak] */
+var ROWS = [
+  [['huracan', '#f2c230'], ['c911', '#3a3f47'], ['m570s', '#ff7a1a'], ['gtr', '#8a9099']],    // NSX: the Japanese and European rivals
+  [['vantage', '#2f7d4f'], ['amggt', '#c9cdd2'], ['i8', '#eef0f2'], ['roma', '#5a6068']],     // SLS: grand tourers
+  [['z06', '#ff7a1a'], ['mustang', '#1f6fe0'], ['fordgt', '#eef0f2'], ['viper', '#c8102e']], // C8: American muscle
+  [['revuelto', '#6fbe2e'], ['sf90', '#f2c230'], ['artura', '#00a6d6'], ['lfa', '#eef0f2']]   // 488: the hypercar row
+];
+var SLOTS = phone.matches ? [[4.05, 0.5], [4.5, 0.45]] : [[4.0, 0.55], [4.38, 0.5], [4.76, 0.45], [5.14, 0.4]];
 var ROW_R = 10.4;
 var parkPool = radial('rgba(255,226,180,0.13)', 'rgba(255,226,180,0)');
 function parkCar(file, color) {
@@ -315,12 +319,21 @@ function parkCar(file, color) {
     return spot;
   });
 }
-function parkRow() {
-  ROW.reduce(function (chain, r) {
+var rows = {}, rowShown = -1;
+function parkRow(i) {
+  rowShown = i;
+  Object.keys(rows).forEach(function (k) { rows[k].forEach(function (spot) { spot.visible = +k === i; }); });
+  if (rows[i]) return;
+  rows[i] = [];
+  // One at a time, so the chapter's own car keeps the bandwidth; a car that arrives after you've moved on stays hidden
+  ROWS[i].slice(0, SLOTS.length).reduce(function (chain, r, n) {
     return chain.then(function () {
       return parkCar(r[0], r[1]).then(function (spot) {
-        spot.position.set(Math.sin(r[2]) * ROW_R, 0, Math.cos(r[2]) * ROW_R);
-        spot.rotation.y = r[2] + Math.PI + r[3]; // nose toward the turntable, turned a little for a three-quarter view
+        var a = SLOTS[n][0];
+        spot.position.set(Math.sin(a) * ROW_R, 0, Math.cos(a) * ROW_R);
+        spot.rotation.y = a + Math.PI + SLOTS[n][1]; // nose toward the turntable, turned a little for a three-quarter view
+        spot.visible = rowShown === i;
+        rows[i].push(spot);
       }).catch(function () {});
     });
   }, Promise.resolve());
@@ -646,6 +659,7 @@ async function show(i, opts) {
   turntable.add(car.group);
   turntable.rotation.y = 0.62;
   fillHud(car.c);
+  if (!first) parkRow(i);
   if (!opts.keepHash) history.replaceState(null, '', first && !location.hash ? location.pathname : '#' + car.c.id);
   body.classList.remove('blink', 'boot');
   busy = false;
@@ -1046,7 +1060,7 @@ var deep = location.hash.slice(1), at = CARS.findIndex(function (c) { return c.i
 show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   if (!current) return;
   var door = openShutter();
-  setTimeout(function () { parkRow(); if (!phone.matches) loadRexy().catch(function () {}); }, door + 400);
+  setTimeout(function () { parkRow(carIdx); if (!phone.matches) loadRexy().catch(function () {}); }, door + 400);
   // The camera rolls in as the door goes up
   moveCamera(homeView(), Math.max(1800, door)).then(function () {
     if (at >= 0) openHood();
