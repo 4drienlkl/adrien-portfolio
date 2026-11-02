@@ -5,6 +5,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { VEHICLES, studioEnvironment, studioLights, fitCar, paintCar, loadCar } from './vehicle3d.js?v=5';
+import { ENGINES, coldStart, stopEngine, soundOn, setSound } from './engine.js?v=1';
 
 var EMAIL = 'awp6745@stern.nyu.edu';
 var LINKEDIN = 'https://www.linkedin.com/in/adrien-pinilla-24b01630a/';
@@ -193,6 +194,15 @@ var shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMa
 shadow.rotation.x = -Math.PI / 2; shadow.position.y = DISC + 0.003; shadow.renderOrder = 3;
 shadow.scale.set(2.8, 5.6, 1);
 turntable.add(shadow);
+// Headlight beams and a tail-light glow, shared by every car and moved to its lamps (one set, so swapping cars never recompiles shaders)
+var beams = [-1, 1].map(function (side) {
+  var b = new THREE.SpotLight(0xf2f5ff, 0, 10, 0.45, 0.65, 1.4);
+  b.userData.side = side;
+  turntable.add(b, b.target);
+  return b;
+});
+var tailGlow = new THREE.PointLight(0xff2a14, 0, 2.6, 1.8);
+turntable.add(tailGlow);
 
 var composer = null;
 if (!phone.matches) {
@@ -287,6 +297,7 @@ function placeDriver() {
   var v = homeView(), az = Math.atan2(v.pos.x, v.pos.z) + (phone.matches ? 2.85 : 2.62), r = 4.5;
   driver.position.set(Math.sin(az) * r, 0, Math.cos(az) * r);
   driver.rotation.y = Math.atan2(v.pos.x - driver.position.x, v.pos.z - driver.position.z) + 0.25;
+  if (body.classList.contains('profile')) { var pv = profileView(); driver.rotation.y = Math.atan2(pv.pos.x - driver.position.x, pv.pos.z - driver.position.z) - 0.12; }
   driver.userData.az = az;
   if (rexy) placeRexy();
 }
@@ -353,6 +364,36 @@ function loadRexy() {
 
 /* ---------- Cars ---------- */
 var cache = {};
+// Each turntable car's lamp materials: switched off at rest, lit when the engine starts
+var LAMPS = { nsx: /LightEmissiveA|RED_Glass/, sls: /^SLSLights$/, c8: /LightEmissiveA/, '488': /^(LBucket|Red_Glass)$/ };
+function findLamps(c, model) {
+  var lamps = [], head = [], tail = [], v = new THREE.Vector3();
+  model.updateMatrixWorld(true);
+  model.traverse(function (o) {
+    if (!o.isMesh || !LAMPS[c.file] || !LAMPS[c.file].test(o.material.name)) return;
+    var m = o.material, red = /red/i.test(m.name);
+    if (lamps.every(function (l) { return l.m !== m; })) {
+      if (red) m.emissive.set(0xff1a0a);
+      else { if (!m.emissiveMap && m.map) m.emissiveMap = m.map; if (!m.emissive.getHex()) m.emissive.set(0xffffff); }
+      lamps.push({ m: m, on: red ? 2.4 : Math.max(1, m.emissiveIntensity) * 2.6, off: red ? 0 : m.emissiveIntensity * 0.05 });
+      m.needsUpdate = true;
+    }
+    // Where the lamps are, for the beams: the lit parts nearest the nose and the tail
+    var pos = o.geometry.attributes.position;
+    for (var i = 0; i < pos.count; i += 4) {
+      v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
+      if (v.z > 1.4 && Math.abs(v.x) > 0.3) head.push(v.clone()); else if (v.z < -1.4) tail.push(v.clone());
+    }
+  });
+  function spot(pts, fallback) {
+    if (!pts.length) return fallback;
+    var x = 0, y = 0, z = -Infinity;
+    pts.forEach(function (p) { x += Math.abs(p.x); y += p.y; z = p.z > 0 ? Math.max(z, p.z) : z; });
+    return new THREE.Vector3(x / pts.length, y / pts.length, z === -Infinity ? pts.reduce(function (a, p) { return Math.min(a, p.z); }, 0) : z);
+  }
+  lamps.forEach(function (l) { l.m.emissiveIntensity = l.off; });
+  return { lamps: lamps, head: spot(head, new THREE.Vector3(0.62, 0.62, 2.0)), tail: spot(tail, new THREE.Vector3(0, 0.8, -2.05)) };
+}
 
 // Split a mesh into its separate panels (islands of connected triangles), in car space
 function islands(mesh) {
@@ -454,6 +495,7 @@ function prepare(c, gltf) {
   model.add(fit);
   fitCar(fit, model);
   paintCar(fit, VEHICLES[c.file], c.color);
+  var lit = findLamps(c, model);
 
   var hood = liftHood(c, model);
   var hb = hood.box, hc = hb.getCenter(new THREE.Vector3());
@@ -492,7 +534,7 @@ function prepare(c, gltf) {
   var group = new THREE.Group();
   model.position.y = DISC;
   group.add(model, mirror);
-  return { c: c, group: group, model: model, hood: hood, lamp: lamp, mirrorHood: mirror.getObjectByName('hood'), plate: plate, bay: bay, rear: c.hood.hinge === 'front' };
+  return { c: c, group: group, model: model, lamps: lit.lamps, head: lit.head, tail: lit.tail, hood: hood, lamp: lamp, mirrorHood: mirror.getObjectByName('hood'), plate: plate, bay: bay, rear: c.hood.hinge === 'front' };
 }
 
 function fetchCar(i, onProgress) {
@@ -638,6 +680,38 @@ function openShutter() {
   return ms;
 }
 
+/* ---------- Ignition: lamps and a cold start ---------- */
+function setLamps(k) {
+  if (!current) return;
+  current.lamps.forEach(function (l) { l.m.emissiveIntensity = l.off + (l.on - l.off) * k; });
+  beams.forEach(function (b) { b.intensity = 30 * k * k; });
+  tailGlow.intensity = 2.2 * k;
+}
+function aimLamps(car) {
+  var h = car.head, t = car.tail;
+  beams.forEach(function (b) {
+    var x = h.x * b.userData.side;
+    b.position.set(x, h.y + DISC, h.z - 0.1);
+    b.target.position.set(x * 1.5, 0, h.z + 3.4);
+  });
+  tailGlow.position.set(0, t.y + DISC, t.z - 0.35);
+}
+var ignition = 0;
+// Key on (the lamps wake dimly), dip while the starter cranks, then full on as the engine catches
+function lightUp(crank) {
+  var id = ++ignition, ms = crank * 1000;
+  setLamps(0);
+  if (still) return setLamps(1);
+  [[120, 0.24], [Math.max(160, ms - 140), 0.12], [ms - 30, 0.22], [ms + 50, 0.65], [ms + 120, 0.4], [ms + 220, 1]].forEach(function (s) {
+    setTimeout(function () { if (id === ignition) setLamps(s[1]); }, s[0]);
+  });
+}
+function startCar(car, sound) {
+  aimLamps(car);
+  if (sound) coldStart(car.c.file);
+  lightUp((ENGINES[car.c.file] || { crank: 0.6 }).crank);
+}
+
 async function show(i, opts) {
   opts = opts || {};
   if (busy && !opts.force) return;
@@ -660,7 +734,8 @@ async function show(i, opts) {
   turntable.add(car.group);
   turntable.rotation.y = 0.62;
   fillHud(car.c);
-  if (!first) parkRow(i);
+  if (!first) { parkRow(i); startCar(car, true); }
+  else { ignition++; aimLamps(car); setLamps(0); } // the first car starts once the garage door is up
   if (!opts.keepHash) history.replaceState(null, '', first && !location.hash ? location.pathname : '#' + car.c.id);
   body.classList.remove('blink', 'boot');
   busy = false;
@@ -759,18 +834,27 @@ function profileView() {
   var camAz = az - (phone.matches ? 0.8 : 0.62), r = phone.matches ? 11.2 : 12.2; // stay inside the slatted back wall (radius 13)
   return { pos: new THREE.Vector3(Math.sin(camAz) * r, phone.matches ? 3.4 : 2.6, Math.cos(camAz) * r), target: mid };
 }
+// Turn the figure on the spot to face a camera position (offset turns it a little off-axis)
+function faceDriver(pos, ms, offset) {
+  var r0 = driver.rotation.y, want = Math.atan2(pos.x - driver.position.x, pos.z - driver.position.z) + (offset || 0);
+  var d = ((want - r0) % (Math.PI * 2) + Math.PI * 3) % (Math.PI * 2) - Math.PI;
+  return tween(ms, function (k) { driver.rotation.y = r0 + d * k; });
+}
 function showProfile() {
   idleSpin = false; controls.enabled = false;
   body.classList.add('profile');
   // Wait briefly for the race car on a slow connection, then go anyway (it rolls in when ready)
   Promise.race([loadRexy().catch(function () {}), new Promise(function (r) { setTimeout(r, 1500); })]).then(function () {
     if (sheet !== 'about') return;
-    moveCamera(profileView(), 1500);
+    var view = profileView();
+    moveCamera(view, 1500);
     shiftTo(hoodShift(), 1500);
+    faceDriver(view.pos, 1300, -0.12);
   });
 }
 function leaveProfile() {
   body.classList.remove('profile');
+  faceDriver(homeView().pos, 1100, 0.25);
   Promise.all([moveCamera(homeView(), 1200), shiftTo(restShift(), 1200)]).then(function () {
     if (sheet === 'about' || hoodOpen) return;
     controls.enabled = true; idleSpin = !still;
@@ -800,6 +884,17 @@ $('p-back').addEventListener('click', back);
 $('p-prev').addEventListener('click', function () { step(-1); });
 $('p-next').addEventListener('click', function () { step(1); });
 $('contact-btn').addEventListener('click', function () { openSheet(CONTACT); });
+var soundBtn = $('sound-btn');
+function soundLabel() {
+  soundBtn.textContent = soundOn() ? '🔊' : '🔇';
+  soundBtn.setAttribute('aria-pressed', soundOn() ? 'true' : 'false');
+  soundBtn.setAttribute('aria-label', soundOn() ? 'Engine sounds on' : 'Engine sounds off');
+}
+soundLabel();
+soundBtn.addEventListener('click', function () {
+  setSound(!soundOn()); soundLabel();
+  if (soundOn() && current) startCar(current, true); // hear the car that's on the turntable
+});
 $('hood-btn').addEventListener('click', openHood);
 $('prev-car').addEventListener('click', function () { show((carIdx + CARS.length - 1) % CARS.length); });
 $('next-car').addEventListener('click', function () { show((carIdx + 1) % CARS.length); });
@@ -913,6 +1008,7 @@ function appleLink(s) { return '<a href="' + s.url + '" target="_blank" rel="noo
 var tt = $('tt'), deck = $('deck'), label = $('label'), spinning = -1;
 function openRoom() {
   if (hoodOpen) closeHood(true);
+  stopEngine();
   loadSongs().catch(function () {});
   body.classList.add('room-open');
   sync();
@@ -1062,6 +1158,8 @@ show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   if (!current) return;
   var door = openShutter();
   setTimeout(function () { parkRow(carIdx); if (!phone.matches) loadRexy().catch(function () {}); }, door + 400);
+  // Browsers block sound until the visitor interacts, so the first car only lights up
+  setTimeout(function () { startCar(current, false); }, door * 0.7);
   // The camera rolls in as the door goes up
   moveCamera(homeView(), Math.max(1800, door)).then(function () {
     if (at >= 0) openHood();
