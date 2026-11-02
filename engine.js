@@ -1,10 +1,10 @@
 /* Cold starts for the turntable cars: short real recordings (credited in the README), played with a little garage echo.
    catch: seconds into the clip where the engine fires, so the lights come up with it. */
 export var ENGINES = {
-  nsx: { src: 'assets/sounds/nsx.m4a', catch: 0.8 },  // Honda NSX (2016), Motor1, CC BY 3.0
-  sls: { src: 'assets/sounds/sls.m4a', catch: 0.62 }, // Mercedes SLS AMG, whillsway on Freesound, CC BY-NC 4.0
-  c8: { src: 'assets/sounds/c8.m4a', catch: 0.15 },   // Corvette Stingray (C8, already idling), Quold on Freesound, CC0
-  '488': { src: 'assets/sounds/488.m4a', catch: 0.6 } // Ferrari 488 Spider, FiExhaust, CC BY 3.0
+  nsx: { src: 'assets/sounds/nsx.m4a?v=2', catch: 0.15 },   // Honda NSX (2016, already idling), Motor1, CC BY 3.0
+  sls: { src: 'assets/sounds/sls.m4a', catch: 0.68 },       // Mercedes SLS AMG, whillsway on Freesound, CC BY-NC 4.0
+  c8: { src: 'assets/sounds/c8.m4a', catch: 0.15 },         // Corvette Stingray (C8, already idling), Quold on Freesound, CC0
+  '488': { src: 'assets/sounds/488.m4a?v=2', catch: 0.45 } // Ferrari 488 GTB with Novitec exhaust, Hungarian Supercar Spotters, CC BY 3.0
 };
 
 var ctx = null, bus = null, playing = null, files = {}, buffers = {}, ticket = 0;

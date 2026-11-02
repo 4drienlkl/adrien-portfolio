@@ -5,7 +5,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { VEHICLES, studioEnvironment, studioLights, fitCar, paintCar, loadCar } from './vehicle3d.js?v=5';
-import { ENGINES, coldStart, stopEngine, soundOn, setSound, preloadEngines } from './engine.js?v=2';
+import { ENGINES, coldStart, stopEngine, soundOn, setSound, preloadEngines } from './engine.js?v=3';
 
 var EMAIL = 'awp6745@stern.nyu.edu';
 var LINKEDIN = 'https://www.linkedin.com/in/adrien-pinilla-24b01630a/';
