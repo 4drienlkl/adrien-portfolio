@@ -66,6 +66,21 @@ var MODELS = {
   m570s: { floor: 95000, make: 'McLaren', name: '570S', v3d: 'm570s', cls: 'exotic', exotic: true, value: 135000, refYear: 2018, years: [2016, 2021], perYear: 2500, rate: 950, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 720, maint: 580, repair: 0.03, dep: 0.08, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.2, color: '#ff7a1a', trims: [['Coupe', 0, 0]] },
   gt3:  { floor: 175000, make: 'Porsche', name: '911 GT3', v3d: 'gt3', cls: 'collectible', exotic: true, value: 220000, refYear: 2023, years: [2022, null], perYear: 2500, rate: 1000, demand: 0.21, lift: 1.7, elastic: 1.3, ins: 700, maint: 380, repair: 0.014, dep: -0.02, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1, color: '#c9cdd2', trims: [['GT3', 0, 0], ['Touring', 0.02, 0]] },
   viper: { floor: 110000, make: 'Dodge', name: 'Viper ACR', v3d: 'viper', cls: 'collectible', value: 160000, refYear: 2016, years: [2016, 2017], perYear: 1500, rate: 750, demand: 0.2, lift: 1.6, elastic: 1.4, ins: 520, maint: 330, repair: 0.02, dep: -0.05, clean: 35, deductible: 2500, rarity: 'Collectible', weight: 0.8, color: '#c8102e', trims: [['ACR', 0, 0]] },
+  // Later arrivals: each one reaches the market in its release month, so the lineup keeps growing as you play
+  nz:   { release: '2027-04', floor: 26000, make: 'Nissan', name: 'Z', v3d: 'nz', cls: 'sports', value: 46000, refYear: 2024, years: [2023, null], perYear: 5500, rate: 300, demand: 0.34, lift: 1.5, elastic: 1.6, ins: 280, maint: 120, repair: 0.014, dep: 0.08, clean: 30, deductible: 2500, rarity: 'Common', weight: 2.4, color: '#f2c230', trims: [['Sport', 0, 0], ['Performance', 0.1, 0.03], ['NISMO', 0.3, 0.08, 2024]] },
+  mustang: { release: '2027-09', floor: 24000, make: 'Ford', name: 'Mustang', v3d: 'mustang', cls: 'sports', value: 50000, refYear: 2025, years: [2024, null], perYear: 6000, rate: 280, demand: 0.36, lift: 1.5, elastic: 1.6, ins: 270, maint: 120, repair: 0.015, dep: 0.09, clean: 30, deductible: 2500, rarity: 'Common', weight: 2.6, color: '#1f6fe0', trims: [['GT', 0, 0], ['GT Premium', 0.08, 0.02], ['Dark Horse', 0.22, 0.07]] },
+  m4:   { release: '2028-03', floor: 36000, make: 'BMW', name: 'M4', v3d: 'm4', cls: 'sports', value: 82000, refYear: 2025, years: [2021, null], perYear: 5500, rate: 450, demand: 0.3, lift: 1.5, elastic: 1.5, ins: 360, maint: 220, repair: 0.018, dep: 0.1, clean: 30, deductible: 2500, rarity: 'Common', weight: 2, color: '#2f7d4f', trims: [['Competition', 0, 0], ['Competition xDrive', 0.05, 0.02], ['CS', 0.25, 0.06, 2025]] },
+  gt4rs: { release: '2028-06', floor: 140000, make: 'Porsche', name: '718 Cayman GT4 RS', v3d: 'gt4rs', cls: 'collectible', exotic: true, value: 175000, refYear: 2023, years: [2022, 2025], perYear: 2500, rate: 800, demand: 0.2, lift: 1.7, elastic: 1.3, ins: 520, maint: 300, repair: 0.012, dep: -0.02, clean: 45, deductible: 5000, rarity: 'Collectible', weight: 0.9, color: '#f2c230', trims: [['GT4 RS', 0, 0], ['Weissach Package', 0.08, 0.02]] },
+  vantage: { release: '2028-10', floor: 85000, make: 'Aston Martin', name: 'Vantage', v3d: 'vantage', cls: 'exotic', exotic: true, value: 185000, refYear: 2025, years: [2025, null], perYear: 3000, rate: 1000, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 700, maint: 420, repair: 0.022, dep: 0.1, clean: 45, deductible: 5000, rarity: 'Uncommon', weight: 1.2, color: '#2f7d4f', trims: [['Coupe', 0, 0]] },
+  z06:  { release: '2029-02', floor: 80000, make: 'Chevrolet', name: 'Corvette Z06', v3d: 'z06', cls: 'sports', value: 115000, refYear: 2024, years: [2023, null], perYear: 4000, rate: 650, demand: 0.28, lift: 1.5, elastic: 1.5, ins: 480, maint: 260, repair: 0.018, dep: 0.05, clean: 30, deductible: 2500, rarity: 'Uncommon', weight: 1.6, color: '#ff7a1a', trims: [['1LZ', 0, 0], ['2LZ', 0.06, 0.02], ['3LZ', 0.12, 0.04], ['Z07', 0.22, 0.07]] },
+  roma: { release: '2029-06', floor: 130000, make: 'Ferrari', name: 'Roma', v3d: 'roma', cls: 'exotic', exotic: true, value: 190000, refYear: 2022, years: [2020, 2025], perYear: 3000, rate: 1100, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 750, maint: 450, repair: 0.02, dep: 0.07, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1.1, color: '#5a6068', trims: [['Coupe', 0, 0]] },
+  artura: { release: '2029-11', floor: 120000, make: 'McLaren', name: 'Artura', v3d: 'artura', cls: 'exotic', exotic: true, value: 200000, refYear: 2024, years: [2023, null], perYear: 2800, rate: 1150, demand: 0.21, lift: 1.7, elastic: 1.3, ins: 780, maint: 520, repair: 0.028, dep: 0.1, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1, color: '#ff7a1a', trims: [['Coupe', 0, 0]] },
+  turbos: { release: '2030-04', floor: 170000, make: 'Porsche', name: '911 Turbo', v3d: 'turbos', cls: 'exotic', exotic: true, value: 230000, refYear: 2023, years: [2021, null], perYear: 3500, rate: 1250, demand: 0.23, lift: 1.7, elastic: 1.3, ins: 800, maint: 420, repair: 0.015, dep: 0.04, clean: 45, deductible: 5000, rarity: 'Rare', weight: 1, color: '#1c1c1e', trims: [['Turbo', -0.1, -0.04], ['Turbo S', 0, 0]] },
+  f296: { release: '2030-10', floor: 240000, make: 'Ferrari', name: '296 GTB', v3d: 'f296', cls: 'exotic', exotic: true, value: 330000, refYear: 2024, years: [2022, null], perYear: 2500, rate: 1600, demand: 0.22, lift: 1.7, elastic: 1.3, ins: 1100, maint: 600, repair: 0.022, dep: 0.05, clean: 45, deductible: 5000, rarity: 'Rare', weight: 0.8, color: '#d40000', trims: [['GTB', 0, 0], ['Assetto Fiorano', 0.12, 0.04]] },
+  fordgt: { release: '2031-03', floor: 850000, make: 'Ford', name: 'GT', v3d: 'fordgt', cls: 'collectible', exotic: true, value: 1000000, refYear: 2018, years: [2017, 2022], perYear: 800, rate: 2500, demand: 0.12, lift: 1.7, elastic: 1.3, ins: 1500, maint: 900, repair: 0.012, dep: -0.05, clean: 45, deductible: 10000, rarity: 'Collectible', weight: 0.35, color: '#1f6fe0', trims: [['Coupe', 0, 0], ['Heritage Edition', 0.15, 0.03, 2019]] },
+  revuelto: { release: '2031-09', floor: 450000, make: 'Lamborghini', name: 'Revuelto', v3d: 'revuelto', cls: 'exotic', exotic: true, value: 600000, refYear: 2025, years: [2024, null], perYear: 2000, rate: 3000, demand: 0.18, lift: 1.7, elastic: 1.3, ins: 2000, maint: 1200, repair: 0.02, dep: 0.04, clean: 60, deductible: 10000, rarity: 'Hypercar', weight: 0.5, color: '#2f7d4f', trims: [['Coupe', 0, 0]] },
+  sf90: { release: '2032-04', floor: 380000, make: 'Ferrari', name: 'SF90 Stradale', v3d: 'sf90', cls: 'exotic', exotic: true, value: 480000, refYear: 2022, years: [2020, 2025], perYear: 2000, rate: 2600, demand: 0.18, lift: 1.7, elastic: 1.3, ins: 1700, maint: 1000, repair: 0.02, dep: 0.03, clean: 60, deductible: 10000, rarity: 'Hypercar', weight: 0.5, color: '#d40000', trims: [['Stradale', 0, 0], ['Assetto Fiorano', 0.1, 0.03]] },
+  lfa:  { release: '2032-10', floor: 750000, make: 'Lexus', name: 'LFA', v3d: 'lfa', cls: 'collectible', exotic: true, value: 900000, refYear: 2011, years: [2010, 2012], perYear: 600, rate: 3500, demand: 0.08, lift: 1.7, elastic: 1.3, ins: 1400, maint: 1100, repair: 0.012, dep: -0.06, clean: 60, deductible: 10000, rarity: 'Collectible', weight: 0.25, color: '#eef0f2', trims: [['Coupe', 0, 0], ['Nürburgring Package', 0.25, 0.05, 2012]] },
   // One of a kind: AO Racing's "Rexy" race car. It isn't street legal, so it can't be rented; it lives in your private collection.
   rexy: { floor: 600000, make: 'Porsche', name: '911 GT3 R “Rexy”', v3d: 'rexy', cls: 'collectible', exotic: true, track: true, livery: true, value: 750000, refYear: 2023, years: [2023, 2023], perYear: 400, rate: 0, demand: 0, lift: 1, elastic: 1, ins: 900, maint: 2500, repair: 0.01, dep: -0.07, clean: 0, deductible: 10000, rarity: 'One of a kind', weight: 0.12, color: '#2fae5a', trims: [['AO Racing #80', 0, 0]] }
 };
@@ -74,10 +89,51 @@ function released(k, week) { var r = MODELS[k].release; return !r || monthKey(we
 // Model years on sale: in-production cars gain next year's model each September
 function lastYear(M, week) { var d = dateOf(week == null ? S.week : week); return M.years[1] != null ? M.years[1] : d.getFullYear() + (d.getMonth() >= 8 ? 1 : 0); }
 function marketModels() { return Object.keys(MODELS).filter(function (k) { return MODELS[k].weight > 0 && released(k); }); }
-var PAINTS = [
-  ['Rosso Corsa', '#d40000'], ['Valencia Red', '#b3101e'], ['Thermal Orange', '#e0520f'], ['Rapid Blue', '#1f6fe0'], ['Iridium Silver', '#c9cdd2'],
-  ['Nero', '#1c1c1e'], ['Bianco', '#eef0f2'], ['Giallo', '#f2c230'], ['British Green', '#2f7d4f'], ['Gunmetal', '#5a6068']
+/* Factory paint. Most cars leave the factory in a standard colour; a few wear a rare or special-order paint that
+   renters seek out and collectors pay more for. A wrap covers the paint: the car loses the rental boost but keeps the value.
+   Tiers: [label, how often it appears, rental demand boost, value premium] */
+var PAINT_TIERS = {
+  standard:  ['Standard', 10, 0, 0],
+  uncommon:  ['Uncommon', 4, 0.03, 0.01],
+  rare:      ['Rare', 1.2, 0.08, 0.04],
+  special:   ['Special order', 0.35, 0.14, 0.08],
+  legendary: ['Legendary', 0.15, 0.25, 0.15]
+};
+// [name, colour, tier] · a colour can carry a finish: #hex|matte, #hex|pearl or #hex|chrome
+var PAINT_LIST = [
+  ['Nero', '#1c1c1e', 'standard'], ['Bianco', '#eef0f2', 'standard'], ['Iridium Silver', '#c9cdd2', 'standard'], ['Gunmetal', '#5a6068', 'standard'],
+  ['Rosso Corsa', '#d40000', 'uncommon'], ['Valencia Red', '#b3101e', 'uncommon'], ['Rapid Blue', '#1f6fe0', 'uncommon'], ['Giallo', '#f2c230', 'uncommon'],
+  ['British Green', '#2f7d4f', 'uncommon'], ['Thermal Orange', '#e0520f', 'uncommon'], ['Papaya', '#ff7a1a', 'uncommon'], ['Viper Red', '#c8102e', 'uncommon'],
+  ['Miami Blue', '#00a6d6', 'rare'], ['Lava Orange', '#ff4f00', 'rare'], ['Verde Mantis', '#6fbe2e', 'rare'], ['Chalk', '#d6d1c4', 'rare'],
+  ['Ultraviolet', '#5a2d91', 'rare'], ['Sunburst Yellow', '#ffd400', 'rare'], ['Shark Blue', '#1747c9', 'rare'],
+  ['Satin Black', '#1e1f22|matte', 'special'], ['Nardo Grey Matte', '#6e7174|matte', 'special'], ['Frozen Blue', '#6d8fb3|matte', 'special'],
+  ['Pearl White', '#f3efe6|pearl', 'special'], ['Viola Pearl', '#6b2d8f|pearl', 'special'], ['Sunset Pearl', '#e0663a|pearl', 'special'],
+  ['Liquid Chrome', '#d9dde2|chrome', 'legendary'], ['Rose Gold Chrome', '#e0a58c|chrome', 'legendary'], ['Spectre Gold', '#d4af37|chrome', 'legendary']
 ];
+var PAINT_BY = {};
+PAINT_LIST.forEach(function (p) { PAINT_BY[p[1]] = p; });
+var PAINTS = PAINT_LIST.filter(function (p) { return p[2] === 'standard' || p[2] === 'uncommon'; }); // wrap colours
+function paintOf(color) { return PAINT_BY[color] || ['Custom', color, 'standard']; }
+function factoryPaint(x) { return paintOf(x.factory || x.color); }
+function paintTier(x) { return M_(x.model).livery ? PAINT_TIERS.standard : PAINT_TIERS[factoryPaint(x)[2]]; }
+function paintDemand(x) { return x.wrap ? 1.04 : 1 + paintTier(x)[2]; }
+function paintCSS(color) {
+  var p = color.split('|');
+  if (p[1] === 'chrome') return 'linear-gradient(135deg,#fff 0%,' + p[0] + ' 40%,#555 60%,' + p[0] + ' 100%)';
+  if (p[1] === 'pearl') return 'linear-gradient(135deg,' + p[0] + ' 30%,#fff 55%,' + p[0] + ' 80%)';
+  return p[0];
+}
+// "Miami Blue · Rare" with a colour dot; perks spells out what the paint is worth
+function paintHTML(x, perks) {
+  var p = factoryPaint(x), t = paintTier(x), k = M_(x.model).livery ? 'standard' : p[2];
+  var h = '<span class="paint t-' + k + '"><i style="background:' + paintCSS(p[1]) + '"></i>' + esc(M_(x.model).livery ? 'Race livery' : p[0]) + (k !== 'standard' ? ' · ' + t[0] : '') + '</span>';
+  if (perks && t[2]) h += ' <span class="dim paint-perks">' + (x.wrap ? 'under a wrap · +' + pct(t[3]) + ' value' : '+' + pct(t[2]) + ' bookings · +' + pct(t[3]) + ' value') + '</span>';
+  return h;
+}
+function pickPaint(M) {
+  if (M.livery || Math.random() < 0.25) return M.color;
+  return pickW(PAINT_LIST, function (p) { return PAINT_TIERS[p[2]][1]; })[1];
+}
 
 /* ---------------- Helpers ---------------- */
 function $(s, r) { return (r || document).querySelector(s); }
@@ -171,7 +227,7 @@ function valueOf(x, week) {
   else base = M.value * Math.pow(1 - M.dep, week / 52) * (1 + 0.02 * (x.year - M.refYear));
   var mileF = clamp(1 - (x.miles - expectedMiles(M, x.year, week)) / 100000 * 0.35, 0.6, 1.15);
   var condF = clamp(0.7 + 0.3 * x.cond / 85, 0.75, 1.06);
-  var trim = 1 + trimOf(x)[1], trend = S.trend[M.cls] || 1;
+  var trim = (1 + trimOf(x)[1]) * (x.color ? 1 + paintTier(x)[3] : 1), trend = S.trend[M.cls] || 1;
   var v = base * mileF * condF * trim * trend;
   // Good examples bottom out: buyers won't let a decent car fall below its floor
   var floor = (M.floor || 0) * trim * clamp(condF * mileF, 0.92, 1.05) * Math.min(1, trend);
@@ -185,7 +241,7 @@ function refRate(x) { return Math.round(M_(x.model).rate * (1 + trimOf(x)[2]) / 
 function refWkRate(x) { return Math.round(refRate(x) * 1.25 / 10) * 10; }
 function ownedInClass(cls, exceptId) { return S.cars.filter(function (c) { return c.listed && c.id !== exceptId && M_(c.model).cls === cls; }).length; }
 /* Chance one day books.
-   x: the car (model, trim, year, cond, wrap) · o: { week, noise, comp } where comp is how many of your other listed cars compete in its category */
+   x: the car (model, trim, year, cond, color, wrap) · o: { week, noise, comp } where comp is how many of your other listed cars compete in its category */
 function dayProb(x, rate, weekend, o) {
   o = o || {};
   var M = M_(x.model), w = o.week == null ? S.week : o.week;
@@ -199,7 +255,7 @@ function dayProb(x, rate, weekend, o) {
   var compF = 1 / (1 + 0.025 * (o.comp || 0)); // your own listings in the same category share some renters
   var events = (S.mods.heat > 0 && M.cls === 'sports' ? 1.2 : 1) * (S.mods.show > 0 && M.exotic ? 1.4 : 1);
   var noise = o.noise == null ? NOISE_MEAN : o.noise;
-  return Math.min(0.9, base * priceF * season * market * repF * condF * ageF * compF * events * (x.wrap ? 1.04 : 1) * noise);
+  return Math.min(0.9, base * priceF * season * market * repF * condF * ageF * compF * events * paintDemand(x) * noise);
 }
 function maintMonthly(x) { return M_(x.model).maint * clamp(0.75 + x.miles / 60000, 0.75, 1.9) * (x.display ? COLLECTION_MAINT : 1); }
 // Repair risk rises with age, mileage above normal and worn condition
@@ -243,10 +299,10 @@ function project(x, o) {
   p.now = months[0];
   p.low = months.reduce(function (a, b) { return b.noi < a.noi ? b : a; });
   p.high = months.reduce(function (a, b) { return b.noi > a.noi ? b : a; });
-  var after = { model: x.model, trim: x.trim, year: x.year, miles: miles, cond: Math.max(50, x.cond - tot.days * RENTAL_WEAR) };
+  var after = { model: x.model, trim: x.trim, year: x.year, miles: miles, cond: Math.max(50, x.cond - tot.days * RENTAL_WEAR), color: x.color, factory: x.factory };
   p.value = value;
   // Scale the model's value path to this car's actual price point (a listing's market value can sit off the formula)
-  var vNow = valueOf({ model: x.model, trim: x.trim, year: x.year, miles: x.miles, cond: x.cond }, S.week);
+  var vNow = valueOf({ model: x.model, trim: x.trim, year: x.year, miles: x.miles, cond: x.cond, color: x.color, factory: x.factory }, S.week);
   p.valueChange = valueOf(after, S.week + 52) * (value / Math.max(1, vNow)) - value;
   p.rate = rate; p.wkRate = wk;
   // Capital and financing
@@ -318,7 +374,8 @@ function genListing(force) {
   var exp = expectedMiles(M, year, S.week);
   var miles = Math.max(300, Math.round(clamp(exp * Math.exp(gauss() * 0.4), exp * 0.35, exp * 1.9) / 10) * 10);
   var cond = Math.round(clamp(rand(72, 97) - (miles / exp - 1) * 9 - ageOf({ year: year }) * 0.6, 50, 99));
-  var x = { model: key, trim: trim, year: year, miles: miles, cond: cond };
+  var paint = force.color || pickPaint(M);
+  var x = { model: key, trim: trim, year: year, miles: miles, cond: cond, color: paint };
   var market = valueOf(x, S.week);
   var r = Math.random(), f, tag = null;
   if (force.f) f = force.f;
@@ -328,8 +385,8 @@ function genListing(force) {
   else f = rand(1.07, 1.2);
   if (f < 0.85) tag = 'Hot deal'; else if (f > 1.12) tag = 'Overpriced';
   if (M.track) tag = 'One of a kind';
+  else if (!tag && PAINT_TIERS[paintOf(paint)[2]][2] >= 0.08) tag = { rare: 'Rare paint', special: 'Special-order paint', legendary: 'Legendary paint' }[paintOf(paint)[2]];
   var hidden = !force.clean && Math.random() < (f < 0.86 ? 0.36 : 0.16) ? Math.round(market * rand(0.04, 0.1) / 100) * 100 : 0;
-  var paint = M.livery || Math.random() < 0.45 ? M.color : PAINTS[randi(0, PAINTS.length - 1)][1];
   return {
     id: S.nextId++, model: key, trim: trim, year: year, miles: miles, cond: cond, color: paint,
     market: Math.round(market / 100) * 100, ask: Math.round(Math.max(market * f, (M.floor || 0) * 0.9) / 100) * 100, hidden: hidden, inspected: false,
@@ -370,7 +427,7 @@ function refreshMarket() {
 }
 
 /* ---------------- AI investment adviser (transparent rules) ---------------- */
-function listingCar(l) { return { model: l.model, trim: l.trim, year: l.year, miles: l.miles, cond: l.inspected && l.hidden ? l.cond - 12 : l.cond, value: l.market }; }
+function listingCar(l) { return { model: l.model, trim: l.trim, year: l.year, miles: l.miles, cond: l.inspected && l.hidden ? l.cond - 12 : l.cond, color: l.color, value: l.market }; }
 function analyze(l, price) {
   var M = MODELS[l.model], x = listingCar(l), comp = ownedInClass(M.cls);
   price = price || l.counter || l.ask;
@@ -433,6 +490,8 @@ function explain(a) {
   s.push('Expect about ' + c.days.toFixed(1) + ' rental days and ' + money(c.noi) + '/mo in net operating income on average, from ' + money(c.low.noi) + ' in ' + monthLabel(monthKey(c.low.w), true).split(' ')[0] + ' to ' + money(c.high.noi) + ' in ' + monthLabel(monthKey(c.high.w), true).split(' ')[0] + '.');
   if (c.valueChange < -0.06 * c.value) s.push('It should lose about ' + money(-c.valueChange) + ' of value over a year, which eats into the return.');
   else if (c.valueChange > 0) s.push('As a collectible it should gain about ' + money(c.valueChange) + ' a year, even though rental income is modest.');
+  var pt = paintTier(l);
+  if (pt[2] >= 0.08) s.push('Its ' + factoryPaint(l)[0] + ' paint is a ' + pt[0].toLowerCase() + ' factory color: renters seek it out (+' + pct(pt[2]) + ' bookings) and it carries a ' + pct(pt[3]) + ' value premium, already in the price.');
   if (a.x.cond < 72) s.push('Condition (' + a.x.cond + '%) dampens demand and adds risk.');
   if (a.opts.action === 'finance') s.push('You’ll need to finance it: 20% down is ' + money(a.price * 0.2) + ', and the ' + money(a.fin.mpay) + '/mo payment ' + (a.fin.low.noi < a.fin.mpay ? 'exceeds the slowest month’s income.' : 'is covered even in the slow season.'));
   if (!l.inspected) s.push('It isn’t inspected yet, so any hidden problem isn’t priced in.');
@@ -440,7 +499,7 @@ function explain(a) {
   // Point out a better-value sibling
   var best = peers.map(function (p) { return analyze(p); }).sort(function (x, y) { return y.score - x.score; })[0];
   if (best && best.score > a.score + 4) s.push('The ' + best.l.year + ' at ' + money(best.price) + ' scores higher (' + best.score + ') on ' + (best.cash.cashYield > c.cashYield ? 'cash yield' : 'risk') + '.');
-  return s.slice(0, 5).join(' ');
+  return s.slice(0, 6).join(' ');
 }
 function headline(score) { return score >= 75 ? 'Strong buy' : score >= 62 ? 'Good opportunity' : score >= 48 ? 'Fair deal' : score >= 35 ? 'Proceed with caution' : 'Pass'; }
 function scoreColor(s) { return s >= 75 ? '#6fcf8e' : s >= 55 ? '#d4a65a' : s >= 40 ? '#f0a35a' : '#ef6a5a'; }
@@ -522,10 +581,10 @@ function service(car) {
 }
 function wrap(car, color) {
   if (S.cash < WRAP_COST) return toast('Not enough cash for a wrap.');
-  S.cash -= WRAP_COST; car.opex += WRAP_COST; car.color = color; car.wrap = true;
+  S.cash -= WRAP_COST; car.opex += WRAP_COST; car.factory = car.factory || car.color; car.color = color; car.wrap = color !== car.factory;
   month().capex += WRAP_COST;
   log('New wrap on ' + M_(car.model).name, -WRAP_COST, 'Customization');
-  save(); toast('Fresh look: renters notice, +4% demand.');
+  save(); toast(car.wrap ? 'Fresh look: renters notice, +4% demand.' : 'Wrap off: the factory ' + factoryPaint(car)[0] + ' is back.');
 }
 function expand() {
   var next = TIERS[S.tier + 1];
@@ -688,6 +747,7 @@ var AWARDS = [
   { id: 'debtfree', name: 'Debt Free', desc: 'Own 4+ cars with no loans outstanding.', test: function () { return S.cars.length >= 4 && S.loans.length === 0; } },
   { id: 'curator', name: 'Private Curator', desc: 'Put 3 cars on display in your private collection.', test: function () { return shown().length >= 3; } },
   { id: 'rexy', name: 'Rexy Roars', desc: 'Own the one-of-a-kind Porsche 911 GT3 R “Rexy”.', test: function () { return S.cars.some(function (c) { return c.model === 'rexy'; }); } },
+  { id: 'unicorn', name: 'Unicorn Spec', desc: 'Own a car in a Legendary factory paint.', test: function () { return S.cars.some(function (c) { return !M_(c.model).livery && factoryPaint(c)[2] === 'legendary'; }); } },
   { id: 'empire', name: 'Automotive Empire', desc: 'Reach $5,000,000 net worth.', test: function () { return netWorth() >= GOAL; } }
 ];
 function unlock(id) {
@@ -857,11 +917,12 @@ function actionButton(a, l) {
 }
 function listingCard(l, a) {
   var M = MODELS[l.model], disc = a.discount, c = a.cash;
-  var tagHTML = (l.tag ? '<span class="chip ' + (l.tag === 'Hot deal' ? 'good' : l.tag === 'One of a kind' || l.tag === 'New arrival' ? 'gold' : 'bad') + '" style="background:rgba(14,12,10,.8)">' + (l.tag === 'Hot deal' ? '🔥 ' : '') + l.tag + '</span>' : '') +
+  var tagHTML = (l.tag ? '<span class="chip ' + (l.tag === 'Hot deal' ? 'good' : l.tag === 'Overpriced' ? 'bad' : 'gold') + '" style="background:rgba(14,12,10,.8)">' + (l.tag === 'Hot deal' ? '🔥 ' : /paint/.test(l.tag) ? '◆ ' : '') + l.tag + '</span>' : '') +
     '<span class="chip" style="background:rgba(14,12,10,.8)">' + l.weeks + ' wk' + (l.weeks === 1 ? '' : 's') + ' left</span>';
   return '<article class="card listing"><button class="bay-stage stage-btn" data-act="listing" data-id="' + l.id + '" aria-label="Inspect the ' + esc(carName(l, true)) + '"><div class="tagline">' + tagHTML + '</div>' + car3d(l, l.color, 760, 333) + '<span class="inspect-3d">⤢ Inspect in 3D</span></button><div class="l-body">' +
     '<div class="l-title"><div><b>' + esc(M.make + ' ' + M.name) + '</b><small>' + l.year + (M.trims.length > 1 ? ' ' + trimOf(l)[0] : '') + ' · ' + l.miles.toLocaleString() + ' mi · ' + condLabel(a.x.cond) + ' · ' + M.rarity + '</small></div>' +
     '<div class="price"><b class="num">' + money(a.price) + '</b><small class="' + (disc >= 0 ? 'up' : 'down') + '">' + (disc >= 0 ? pct(disc) + ' under' : pct(-disc) + ' over') + ' market</small></div></div>' +
+    '<div class="paint-line">' + paintHTML(l, true) + '</div>' +
     (M.track ? '<div class="stats"><div><small>Market value</small><b class="num">' + moneyS(l.market) + '</b></div><div><small>Use</small><b>Display only</b></div><div><small>Appreciation/yr</small><b class="num up">' + signed(c.valueChange) + '</b></div>' :
     '<div class="stats"><div><small>Market value</small><b class="num">' + moneyS(l.market) + '</b></div><div><small>Daily rate</small><b class="num">' + money(c.rate) + '</b></div><div><small>Bookings/mo</small><b class="num">' + c.days.toFixed(1) + ' days</b></div>') +
     '<div><small>Revenue/mo</small><b class="num">' + money(c.gross) + '</b></div><div><small>Expenses/mo</small><b class="num">' + money(c.opex) + '</b></div><div><small>Net/mo</small><b class="num ' + (c.noi >= 0 ? 'up' : 'down') + '">' + money(c.noi) + '</b></div></div>' +
@@ -1106,7 +1167,7 @@ function listingModal(l) {
   var chosenOk = ctx.down >= 1 ? o.cash : finOpt && finOpt.ok;
   var due = ctx.down >= 1 ? price : Math.round(price * ctx.down);
   var h = head(l.year + (M.trims.length > 1 ? ' · ' + trimOf(l)[0] : '') + (M.rarity !== CLASS_LABEL[M.cls] ? ' · ' + M.rarity : '') + ' · ' + CLASS_LABEL[M.cls], esc(M.make + ' ' + M.name), l.miles.toLocaleString() + ' miles (' + (a.mileRatio > 1.15 ? pct(a.mileRatio - 1) + ' above' : a.mileRatio < 0.85 ? pct(1 - a.mileRatio) + ' below' : 'about') + ' normal for its age) · ' + condLabel(cond) + ' condition (' + cond + '%) · listed ' + l.weeks + ' more week' + (l.weeks === 1 ? '' : 's'));
-  h += '<div class="m-body"><div class="m-hero">' + viewerHTML(l, l.color) + '</div>';
+  h += '<div class="m-body"><div class="m-hero">' + viewerHTML(l, l.color) + '</div><div class="paint-line" style="margin:-4px 0 14px">Factory paint: ' + paintHTML(l, true) + '</div>';
   h += '<div class="sec" style="margin-bottom:16px"><div class="verdict">' + ring(a.score, true) + '<div><p class="eyebrow">AI adviser · investment score</p><h3>' + headline(a.score) + '</h3><p>' + esc(explain(a)) + '</p></div></div>' +
     '<div class="adv-kpis"><div><small>Revenue / mo</small><b class="num">' + money(a.cash.gross) + '</b></div><div><small>Expenses / mo</small><b class="num">' + money(a.cash.opex) + '</b></div><div><small>Net cash flow / mo</small><b class="num ' + (p.cashflow >= 0 ? 'up' : 'down') + '">' + money(p.cashflow) + '</b><em>' + (p.mpay ? 'after ' + money(p.mpay) + ' loan' : 'no loan') + '</em></div><div><small>Annual ROI</small><b class="num">' + pct(p.roi, 1) + '</b><em>on ' + money(p.cashIn) + ' cash in</em></div><div><small>Depreciation / yr</small><b class="num ' + (a.cash.valueChange >= 0 ? 'up' : 'down') + '">' + signed(a.cash.valueChange) + '</b></div><div><small>Risk</small><b>' + a.riskLabel + '</b><em>' + a.riskTotal + '/100</em></div></div>' +
     '<details class="math"><summary>Why ' + a.score + '? Show the score breakdown</summary>' + breakdownHTML(a) +
@@ -1146,8 +1207,12 @@ function carModal(c) {
     '<span>Utilization (4 wks)</span><b>' + pct(util(c)) + '</b>' + (loan ? '<span>Loan balance</span><b class="num">' + money(loan.balance) + '</b><span>Loan payment</span><b class="num">' + money(loan.mpay) + '/mo</b>' : '') + '</div>' + (spark ? '<p class="eyebrow" style="margin:14px 0 4px">Value history</p>' + spark : '') +
     '<h4 style="margin-top:16px">Condition</h4><div class="bar"><span style="width:' + c.cond + '%"></span></div><p class="dim" style="font-size:.78rem;margin-top:6px">Lower condition cuts demand and makes breakdowns likelier.</p>' +
     '<button class="btn sm" style="margin-top:8px" data-act="service" data-id="' + c.id + '">Service · ' + money(serviceCost(c)) + ' (+15%, 2 days in the shop)</button></div>';
+  var fp = factoryPaint(c), ft = paintTier(c);
   var wrapHTML = M.livery ? '<p class="dim" style="font-size:.78rem;margin-top:14px">Its race livery stays as it is: no wraps on this one.</p>' :
-    '<h4 style="margin-top:16px">Customize · ' + money(WRAP_COST) + ' wrap</h4><div class="swatches">' + PAINTS.map(function (pp) { return '<button class="swatch' + (c.color === pp[1] ? ' on' : '') + '" style="background:' + pp[1] + '" title="' + pp[0] + '" aria-label="Wrap in ' + pp[0] + '" data-act="wrap" data-id="' + c.id + '" data-color="' + pp[1] + '"></button>'; }).join('') + '</div><p class="dim" style="font-size:.76rem;margin-top:6px">A fresh wrap adds 4% to rental demand.</p>';
+    '<h4 style="margin-top:16px">Paint</h4><div class="paint-line">' + paintHTML(c, true) + '</div>' +
+    (c.wrap ? '<button class="btn sm" style="margin-top:8px" data-act="wrap" data-id="' + c.id + '" data-color="' + c.factory + '">Remove wrap · ' + money(WRAP_COST) + '</button>' : '') +
+    '<h4 style="margin-top:16px">Customize · ' + money(WRAP_COST) + ' wrap</h4><div class="swatches">' + PAINTS.map(function (pp) { return '<button class="swatch' + (c.color === pp[1] ? ' on' : '') + '" style="background:' + pp[1] + '" title="' + pp[0] + '" aria-label="Wrap in ' + pp[0] + '" data-act="wrap" data-id="' + c.id + '" data-color="' + pp[1] + '"></button>'; }).join('') + '</div><p class="dim" style="font-size:.76rem;margin-top:6px">' +
+    (ft[2] > 0.04 ? 'A wrap adds 4% to rental demand but hides the ' + esc(fp[0]) + ' paint, which renters value more (+' + pct(ft[2]) + '). Its value premium stays either way.' : 'A fresh wrap adds 4% to rental demand.') + '</p>';
   if (c.display) {
     var asRental = M.track ? null : project(c, { rate: c.rate, wkRate: c.wkRate, comp: ownedInClass(M.cls), price: c.value });
     h += '<div>' + econHTML(p, 'Holding it · next 12 months') + '<div class="sec" style="margin-top:14px"><h4>Private collection</h4><p class="dim" style="font-size:.84rem">' +
@@ -1181,6 +1246,7 @@ function compareModal() {
     row('Price vs. market', function (a) { return a.discount; }, function (v) { return (v >= 0 ? pct(v) + ' under' : pct(-v) + ' over'); }, false) +
     row('Mileage', function (a) { return a.l.miles; }, function (v, a) { return v.toLocaleString() + ' <em class="dim">(' + (a.mileRatio > 1 ? '+' : '') + pct(a.mileRatio - 1) + ')</em>'; }, true) +
     row('Condition', function (a) { return a.x.cond; }, function (v) { return v + '%'; }, false) +
+    row('Paint', function (a) { return paintTier(a.l)[2]; }, function (v, a) { return paintHTML(a.l); }, false) +
     row('Daily rate', function (a) { return a.cash.rate; }, money) +
     row('Bookings / month', function (a) { return a.cash.days; }, function (v) { return v.toFixed(1) + ' days'; }, false) +
     row('Revenue / month', function (a) { return a.cash.gross; }, money, false) +

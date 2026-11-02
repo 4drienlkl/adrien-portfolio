@@ -4,7 +4,7 @@ import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
 import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
-import { VEHICLES, studioEnvironment, studioLights, fitCar, paintCar, loadCar } from './vehicle3d.js?v=3';
+import { VEHICLES, studioEnvironment, studioLights, fitCar, paintCar, loadCar } from './vehicle3d.js?v=5';
 
 var EMAIL = 'awp6745@stern.nyu.edu';
 var LINKEDIN = 'https://www.linkedin.com/in/adrien-pinilla-24b01630a/';

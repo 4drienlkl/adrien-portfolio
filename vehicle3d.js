@@ -24,6 +24,21 @@ export var VEHICLES = {
   amggt: { file: 'amggt', paint: /2015Paint_Material1$/, metal: 0.6 },
   viper: { file: 'viper', paint: /^CarPaint_AO_1$/, metal: 0.5 },
   emira: { file: 'emira', paint: /Lotus_Emira_2022_Base1$/, metal: 0.5 },
+  // Later arrivals in Garage Tycoon
+  nz: { file: 'nz', paint: /PaintTNR_Material1$/, metal: 0.55 },
+  mustang: { file: 'mustang', paint: /^Ford_MustangGT_2024PaintA_Material$/, metal: 0.5 },
+  m4: { file: 'm4', paint: /^m4car_(body|bodykit|hood)1$/, metal: 0.55 },
+  gt4rs: { file: 'gt4rs', paint: /^Porsche_718CaymanGT4RS_2022Paint_Material$/, metal: 0.45 },
+  vantage: { file: 'vantage', paint: /^AstonAstonMartin_Vantage_2024Paint_Material1$/, metal: 0.55 },
+  z06: { file: 'z06', paint: /^Chevrolet_Corvette.*2023Paint_Material$/, metal: 0.55 },
+  roma: { file: 'roma', paint: /^Ferrari_Roma.*2020Paint_Material$/, metal: 0.6 },
+  artura: { file: 'artura', paint: /^McLaren_Artura.*2022Paint_Material$/, metal: 0.5 },
+  turbos: { file: 'turbos', paint: /^PorschePorsche_911TurboS992_2021RegionA1$/, metal: 0.6 },
+  f296: { file: 'f296', paint: /^Ferrari_296GTB_2022Paint_Material$/, metal: 0.4 },
+  fordgt: { file: 'fordgt', paint: /^Ford_GT.*2017Paint_Material$/, metal: 0.5, precise: true },
+  revuelto: { file: 'revuelto', paint: /^Lamborghini_Revuelto.*2024Paint_Material$/, metal: 0.45 },
+  sf90: { file: 'sf90', paint: /^Ferrari_SF90Stradale_2020Paint_Material$/, metal: 0.4 },
+  lfa: { file: 'lfa', paint: /^Lexus_LFA.*2011Paint_Material$/, metal: 0.55 },
   // Race car in its original "Rexy" livery: the paint is a printed texture, so it is never recoloured
   // Its body, chassis and cabin are flagged see-through in the file, which breaks depth sorting; draw them solid
   rexy: { file: 'rexy', paint: null, metal: 0.5, opaque: /^(Body|Chassis|Interior)$/ }
@@ -65,18 +80,24 @@ export function studioLights(scene) {
 }
 
 // Scale the model to CAR_LENGTH, centre it, and stand it on y = 0. fit is the glTF scene inside the group model.
-export function fitCar(fit, model) {
+// precise measures the vertices themselves, for models whose rotated parts give loose bounding boxes
+export function fitCar(fit, model, precise) {
   model.updateMatrixWorld(true);
-  var b = new THREE.Box3().setFromObject(fit), size = b.getSize(new THREE.Vector3());
+  var b = new THREE.Box3().setFromObject(fit, !!precise), size = b.getSize(new THREE.Vector3());
   fit.scale.multiplyScalar(CAR_LENGTH / size.z);
   model.updateMatrixWorld(true);
-  b.setFromObject(fit);
+  b.setFromObject(fit, !!precise);
   var ctr = b.getCenter(new THREE.Vector3());
   fit.position.set(-ctr.x, -b.min.y, -ctr.z).add(fit.position);
 }
 
+// color is a hex, optionally with a finish: '#8b8e90|matte', '#f3efe6|pearl' or '#d9dde2|chrome'
 export function paintMaterial(color, metal) {
-  var paint = new THREE.MeshPhysicalMaterial({ color: color, metalness: metal, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.03 });
+  var p = String(color).split('|'), finish = p[1];
+  var paint = new THREE.MeshPhysicalMaterial({ color: p[0], metalness: metal, roughness: 0.3, clearcoat: 1, clearcoatRoughness: 0.03 });
+  if (finish === 'matte') { paint.metalness = Math.min(metal, 0.25); paint.roughness = 0.62; paint.clearcoat = 0; paint.envMapIntensity = 0.45; }
+  else if (finish === 'pearl') { paint.iridescence = 1; paint.iridescenceIOR = 1.5; paint.iridescenceThicknessRange = [180, 520]; paint.metalness = 0.35; }
+  else if (finish === 'chrome') { paint.metalness = 1; paint.roughness = 0.06; paint.clearcoatRoughness = 0; }
   paint.name = 'paint';
   return paint;
 }
@@ -123,7 +144,7 @@ function baseCar(key) {
     prepared[key] = loadCar(spec.file).then(function (g) {
       var model = new THREE.Group(), fit = g.scene.clone(true);
       model.add(fit);
-      fitCar(fit, model);
+      fitCar(fit, model, spec.precise);
       paintCar(fit, spec, '#888888');
       return model;
     });

@@ -145,6 +145,14 @@ select { background: var(--panel); border: 1px solid var(--line); padding: 8px 1
 .l-title { display: flex; justify-content: space-between; gap: 10px; align-items: start; }
 .l-title b { font: 700 1.25rem/1.1 var(--cond); text-transform: uppercase; letter-spacing: .02em; }
 .l-title small { display: block; color: var(--muted); font-size: .76rem; }
+.paint-line { font-size: .78rem; color: var(--muted); display: flex; flex-wrap: wrap; align-items: center; gap: 4px 8px; }
+.paint { display: inline-flex; align-items: center; gap: 6px; color: var(--body); }
+.paint i { width: 12px; height: 12px; border-radius: 50%; border: 1px solid rgba(255, 255, 255, .25); box-shadow: inset 0 -3px 4px rgba(0, 0, 0, .35); flex: none; }
+.paint.t-uncommon { color: #cfd8e6; }
+.paint.t-rare { color: #8fd3ff; }
+.paint.t-special { color: #d9b8ff; }
+.paint.t-legendary { color: var(--gold-2); text-shadow: 0 0 10px rgba(240, 201, 131, .45); }
+.paint-perks { font-size: .74rem; }
 .price b { font: 700 1.4rem/1 var(--cond); display: block; text-align: right; }
 .price small { font-size: .72rem; display: block; text-align: right; }
 .stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
@@ -433,13 +441,13 @@ img.v3d { transition: opacity .5s, transform .4s; }
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div id="coach"></div>
 
-<script src="tycoon.js?v=10"></script>
+<script src="tycoon.js?v=12"></script>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }
 </script>
 <script type="module">
 // The same 3D models, studio lighting and paint as the portfolio garage (vehicle3d.js)
-import { Vehicle3DPreview } from './vehicle3d.js?v=3';
+import { Vehicle3DPreview } from './vehicle3d.js?v=5';
 window.Vehicle3DPreview = Vehicle3DPreview;
 dispatchEvent(new Event('vehicle3d:ready'));
 </script>

@@ -26,7 +26,7 @@ Then open http://localhost:8000.
 | `classic.html` | The same portfolio as one scrolling page ("Quick view") |
 | `tycoon.html`, `tycoon.js` | Garage Tycoon: a sports car rental business game (buy or finance cars, set prices, grow to $5M). All economics come from `project()` / `dayProb()` in `tycoon.js` |
 | `vehicle3d.js` | Shared 3D car rendering (studio lighting, model loading, paint) used by both the garage and the game's marketplace |
-| `assets/cars/` | The four car models, compressed for the web (meshopt + WebP textures) |
+| `assets/cars/` | The car models (garage and game), compressed for the web (meshopt + WebP textures) |
 | `assets/` | Headshot, share card (`og-image.jpg`), favicons and the résumé PDF |
 | `mockups/` | Earlier concept mockups |
 
@@ -58,6 +58,21 @@ Garage Tycoon also uses, by [ddiaz-design](https://sketchfab.com/ddiaz-design):
 [2022 Lotus Emira V6](https://sketchfab.com/3d-models/2022-lotus-emira-v6-cea1fdedebca461dabba65d3df809d9e) (all CC BY-NC-SA 4.0), and
 [2016 McLaren 570S Coupe](https://sketchfab.com/3d-models/2016-mclaren-570s-coupe-2396ca2aa3ec4f99bf29baba3d7a43cf) (CC BY 4.0);
 plus [Porsche 992 GT3 R "Rexy"](https://sketchfab.com/3d-models/porsche-992-gt3-r-rexy-2febf6b976e147b391f96ae471dfc598) by [VTX](https://sketchfab.com/VTX_car) (CC BY-NC-SA 4.0).
+Later arrivals in Garage Tycoon, also by [ddiaz-design](https://sketchfab.com/ddiaz-design):
+[2023 Nissan Z](https://sketchfab.com/3d-models/2023-nissan-z-f8959b9b44bb46908a506ac4218f4489),
+[2024 Ford Mustang GT](https://sketchfab.com/3d-models/2024-ford-mustang-gt-16f0753d26a04a089223f2d9107a777f),
+[2025 BMW M4 Competition](https://sketchfab.com/3d-models/2025-bmw-m4-competition-f8141ecd755547989c9209784b71ad43),
+[2022 Porsche 718 Cayman GT4 RS](https://sketchfab.com/3d-models/2022-porsche-718-cayman-gt4-rs-b1d87619f6174f10be47423fcd4de444),
+[2025 Aston Martin Vantage](https://sketchfab.com/3d-models/2025-aston-martin-vantage-3667b1c93a784cb9b55f4ea3f7ba1aec),
+[2023 Chevrolet Corvette Z06](https://sketchfab.com/3d-models/2023-chevrolet-corvette-z06-d2a8b148b1824f338d762ad3f101a906),
+[2021 Porsche 911 Turbo S (992)](https://sketchfab.com/3d-models/2021-porsche-911-turbo-s-992-b6756fc06654405a839bf14e931e4c83),
+[2022 Ferrari 296 GTB](https://sketchfab.com/3d-models/2022-ferrari-296-gtb-269f4fd01b584dd38f7e512de60c4645),
+[2017 Ford GT](https://sketchfab.com/3d-models/2017-ford-gt-7eb9c5aca1e84d428898bf88fa9ab8b7),
+[2024 Lamborghini Revuelto](https://sketchfab.com/3d-models/2024-lamborghini-revuelto-9128ccf717f641b9bcdaa5f06a613f01),
+[2020 Ferrari SF90 Stradale](https://sketchfab.com/3d-models/2020-ferrari-sf90-stradale-b98147fea0da42d29a2e41a4aba0fc20) and
+[2011 Lexus LFA](https://sketchfab.com/3d-models/2011-lexus-lfa-83d062d1cd144e6a944c7415ef864889) (all CC BY-NC-SA 4.0), and
+[2020 Ferrari Roma](https://sketchfab.com/3d-models/2020-ferrari-roma-cbc0c13c0fb54fc8bbfa79a9ff99e3aa) and
+[2023 McLaren Artura](https://sketchfab.com/3d-models/2023-mclaren-artura-d393abd807f04d62b96b1bd82119b5d4) (CC BY 4.0).
 
 The versions in `assets/cars/` are compressed and repainted, and are shared under the same licenses.
 
