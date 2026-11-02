@@ -342,9 +342,9 @@ function parkRow(i) {
 // Rexy, the driver's race car, parks just behind the figure
 var rexy = null, rexyLoading = null;
 function placeRexy() {
-  var az = driver.userData.az + (phone.matches ? 0.28 : 0.34), r = 7.3;
+  var az = driver.userData.az + (phone.matches ? 0.28 : 0.3), r = 7.3;
   rexy.position.set(Math.sin(az) * r, 0, Math.cos(az) * r);
-  rexy.rotation.y = az + Math.PI + 1.0; // parked side-on behind the figure, nose toward the viewer's right
+  rexy.rotation.y = az + Math.PI + 0.45; // nose angled out toward the viewer's right, so its tail stays clear of the parked row
 }
 function loadRexy() {
   if (!rexyLoading) rexyLoading = parkCar('rexy', '#ffffff').then(function (spot) { rexy = spot; placeRexy(); return spot; });
