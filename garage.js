@@ -194,15 +194,15 @@ var shadow = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMa
 shadow.rotation.x = -Math.PI / 2; shadow.position.y = DISC + 0.003; shadow.renderOrder = 3;
 shadow.scale.set(2.8, 5.6, 1);
 turntable.add(shadow);
-// Headlight beams and a tail-light glow, shared by every car and moved to its lamps (one set, so swapping cars never recompiles shaders)
-var beams = [-1, 1].map(function (side) {
-  var b = new THREE.SpotLight(0xf2f5ff, 0, 10, 0.45, 0.65, 1.4);
-  b.userData.side = side;
-  turntable.add(b, b.target);
-  return b;
-});
-var tailGlow = new THREE.PointLight(0xff2a14, 0, 2.6, 1.8);
-turntable.add(tailGlow);
+// Soft pools of light on the floor ahead of the headlights and behind the tail lights, faded in with the lamps
+// (painted on, not real lights: a light would leave a glare spot on the glossy turntable)
+function lampPool(color) {
+  var m = new THREE.Mesh(new THREE.PlaneGeometry(1, 1), new THREE.MeshBasicMaterial({ map: radial(color, 'rgba(0,0,0,0)'), transparent: true, opacity: 0, depthWrite: false, blending: THREE.AdditiveBlending }));
+  m.rotation.x = -Math.PI / 2; m.position.y = DISC + 0.004; m.renderOrder = 4; m.visible = false;
+  turntable.add(m);
+  return m;
+}
+var headPool = lampPool('rgba(235,240,255,1)'), tailPool = lampPool('rgba(255,40,20,1)');
 
 var composer = null;
 if (!phone.matches) {
@@ -366,19 +366,48 @@ function loadRexy() {
 var cache = {};
 // Each turntable car's lamp materials: switched off at rest, lit when the engine starts
 var LAMPS = { nsx: /LightEmissiveA|RED_Glass/, sls: /^SLSLights$/, c8: /LightEmissiveA/, '488': /^(LBucket|Red_Glass)$/ };
+// Lamp lenses textured white front and back on some models, so the tail lights read red even when off
+var LENSES = { nsx: /LightA_Material$/, c8: /LightA_Material$/ };
+// Red behind the rear axle, both the lens colour and its glow (toCar maps the mesh into the car's own frame, nose toward +z)
+function tintTails(m, toCar) {
+  m.userData.tailTint = true;
+  m.onBeforeCompile = function (sh) {
+    sh.uniforms.lampToCar = { value: toCar };
+    sh.vertexShader = sh.vertexShader
+      .replace('#include <common>', '#include <common>\nuniform mat4 lampToCar;\nvarying float vCarZ;')
+      .replace('#include <begin_vertex>', '#include <begin_vertex>\nvCarZ = (lampToCar * vec4(transformed, 1.0)).z;');
+    sh.fragmentShader = sh.fragmentShader
+      .replace('#include <common>', '#include <common>\nvarying float vCarZ;')
+      .replace('#include <map_fragment>', '#include <map_fragment>\nif (vCarZ < -1.1) diffuseColor.rgb *= vec3(0.85, 0.07, 0.05);')
+      .replace('#include <emissivemap_fragment>', '#include <emissivemap_fragment>\nif (vCarZ < -1.1) totalEmissiveRadiance *= vec3(1.4, 0.07, 0.03);');
+  };
+  m.customProgramCacheKey = function () { return 'lamp-tails'; };
+}
 function findLamps(c, model) {
-  var lamps = [], head = [], tail = [], v = new THREE.Vector3();
+  var lamps = [], head = [], tail = [], v = new THREE.Vector3(), tails = {};
   model.updateMatrixWorld(true);
   model.traverse(function (o) {
+    if (o.isMesh && LENSES[c.file] && LENSES[c.file].test(o.material.name) && !o.material.userData.tailTint) { tintTails(o.material, o.matrixWorld.clone()); o.material.needsUpdate = true; }
     if (!o.isMesh || !LAMPS[c.file] || !LAMPS[c.file].test(o.material.name)) return;
+    // A lamp part that sits wholly at the back shares the headlights' material on some models: give it its own, lit red
+    if (!/red/i.test(o.material.name) && new THREE.Box3().setFromObject(o).max.z < -0.8) {
+      var src = o.material;
+      if (!tails[src.uuid]) { tails[src.uuid] = src.clone(); tails[src.uuid].name = src.name + 'Red'; tails[src.uuid].emissiveMap = src.map || src.emissiveMap; }
+      o.material = tails[src.uuid];
+    }
     var m = o.material, red = /red/i.test(m.name);
     if (lamps.every(function (l) { return l.m !== m; })) {
       if (red) m.emissive.set(0xff1a0a);
-      else { if (!m.emissiveMap && m.map) m.emissiveMap = m.map; if (!m.emissive.getHex()) m.emissive.set(0xffffff); }
-      lamps.push({ m: m, on: red ? 2.4 : Math.max(1, m.emissiveIntensity) * 2.6, off: red ? 0 : m.emissiveIntensity * 0.05 });
+      else {
+        if (!m.emissiveMap && m.map) m.emissiveMap = m.map;
+        if (!m.emissive.getHex()) m.emissive.set(0xffffff);
+        // One material for every lamp on the car: its glow is white, so tint whatever sits at the back red
+        if (new THREE.Box3().setFromObject(o).max.z > 0) tintTails(m, o.matrixWorld.clone());
+      }
+      lamps.push({ m: m, on: red ? 2.4 : Math.min(Math.max(1, m.emissiveIntensity), 1.6) * 2.6, off: red ? 0 : m.emissiveIntensity * 0.05 });
       m.needsUpdate = true;
     }
-    // Where the lamps are, for the beams: the lit parts nearest the nose and the tail
+    // Where the lamps are, for the light pools: the lit parts nearest the nose and the tail
     var pos = o.geometry.attributes.position;
     for (var i = 0; i < pos.count; i += 4) {
       v.fromBufferAttribute(pos, i).applyMatrix4(o.matrixWorld);
@@ -684,17 +713,13 @@ function openShutter() {
 function setLamps(k) {
   if (!current) return;
   current.lamps.forEach(function (l) { l.m.emissiveIntensity = l.off + (l.on - l.off) * k; });
-  beams.forEach(function (b) { b.intensity = 30 * k * k; });
-  tailGlow.intensity = 2.2 * k;
+  headPool.material.opacity = 0.32 * k * k; tailPool.material.opacity = 0.22 * k;
+  headPool.visible = tailPool.visible = k > 0;
 }
 function aimLamps(car) {
   var h = car.head, t = car.tail;
-  beams.forEach(function (b) {
-    var x = h.x * b.userData.side;
-    b.position.set(x, h.y + DISC, h.z - 0.1);
-    b.target.position.set(x * 1.5, 0, h.z + 3.4);
-  });
-  tailGlow.position.set(0, t.y + DISC, t.z - 0.35);
+  headPool.position.z = h.z + 0.9; headPool.scale.set(h.x * 2 + 1.1, 2.2, 1);
+  tailPool.position.z = t.z - 0.35; tailPool.scale.set(t.x * 2 + 0.9, 0.9, 1);
 }
 var ignition = 0;
 // Key on (the lamps wake dimly), dip while the starter cranks, then full on as the engine catches
