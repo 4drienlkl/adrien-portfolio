@@ -76,4 +76,10 @@ Later arrivals in Garage Tycoon, also by [ddiaz-design](https://sketchfab.com/dd
 
 The versions in `assets/cars/` are compressed and repainted, and are shared under the same licenses.
 
+Engine start-up recordings on the homepage, trimmed and level-matched in `assets/sounds/` and shared under the same licenses:
+[Honda NSX (2016)](https://commons.wikimedia.org/wiki/File:Honda_NSX_(2016)_-_engine_and_exhaust_sound_(YouTube-_xqpIXpkUGk).opus) by Motor1 (CC BY 3.0),
+[Mercedes AMG SLS start-rev-stop](https://freesound.org/people/whillsway/sounds/789670/) by whillsway (CC BY-NC 4.0),
+[Tuned 2023 Corvette Stingray](https://freesound.org/people/Quold/sounds/711565/) by Quold (CC0) and
+[Ferrari 488 Spider with Fi Exhaust](https://commons.wikimedia.org/wiki/File:Ferrari_488_Spider_with_Fi_Exhaust_system_-_engine_and_exhaust_sound_(YouTube_52YexV8ube4).opus) by FiExhaust (CC BY 3.0).
+
 Contact: awp6745@stern.nyu.edu

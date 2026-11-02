@@ -5,7 +5,7 @@ import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
 import { UnrealBloomPass } from 'three/addons/postprocessing/UnrealBloomPass.js';
 import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
 import { VEHICLES, studioEnvironment, studioLights, fitCar, paintCar, loadCar } from './vehicle3d.js?v=5';
-import { ENGINES, coldStart, stopEngine, soundOn, setSound } from './engine.js?v=1';
+import { ENGINES, coldStart, stopEngine, soundOn, setSound, preloadEngines } from './engine.js?v=2';
 
 var EMAIL = 'awp6745@stern.nyu.edu';
 var LINKEDIN = 'https://www.linkedin.com/in/adrien-pinilla-24b01630a/';
@@ -708,8 +708,12 @@ function lightUp(crank) {
 }
 function startCar(car, sound) {
   aimLamps(car);
-  if (sound) coldStart(car.c.file);
-  lightUp((ENGINES[car.c.file] || { crank: 0.6 }).crank);
+  var id = ++ignition, at = (ENGINES[car.c.file] || { catch: 0.6 }).catch;
+  setLamps(0);
+  // Wait for the recording to begin so the lamps come up as its engine fires
+  (sound ? coldStart(car.c.file) : Promise.resolve()).then(function () {
+    if (id === ignition && current === car) lightUp(at);
+  });
 }
 
 async function show(i, opts) {
@@ -1160,6 +1164,7 @@ show(at >= 0 ? at : 0, { keepHash: true }).then(function () {
   setTimeout(function () { parkRow(carIdx); if (!phone.matches) loadRexy().catch(function () {}); }, door + 400);
   // Browsers block sound until the visitor interacts, so the first car only lights up
   setTimeout(function () { startCar(current, false); }, door * 0.7);
+  setTimeout(preloadEngines, door + 1500);
   // The camera rolls in as the door goes up
   moveCamera(homeView(), Math.max(1800, door)).then(function () {
     if (at >= 0) openHood();
