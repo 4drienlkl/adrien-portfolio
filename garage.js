@@ -294,12 +294,13 @@ function placeDriver() {
 /* ---------- More of the collection: cars parked around the studio, and the driver's own race car ----------
    Each chapter has its own cars in the dim background, from the same models Garage Tycoon uses (vehicle3d.js).
    A chapter's cars load the first time it opens (so the page only downloads what's shown) and stay for next time.
-   ROWS[chapter] = [[model, paint], ...] fills SLOTS in order: [angle around the room (0 = +z), heading tweak] */
+   ROWS[chapter] = [[model, paint], ...] fills SLOTS in order: [angle around the room (0 = +z), heading tweak]
+   Every car in the garage wears its own colour, the four on the turntable included; '|matte' and '|pearl' set the finish (chrome only mirrors the dark studio) */
 var ROWS = [
-  [['huracan', '#f2c230'], ['c911', '#3a3f47'], ['m570s', '#ff7a1a'], ['gtr', '#8a9099']],    // NSX: the Japanese and European rivals
-  [['vantage', '#2f7d4f'], ['amggt', '#c9cdd2'], ['i8', '#eef0f2'], ['roma', '#5a6068']],     // SLS: grand tourers
-  [['z06', '#ff7a1a'], ['mustang', '#1f6fe0'], ['fordgt', '#eef0f2'], ['viper', '#c8102e']], // C8: American muscle
-  [['revuelto', '#6fbe2e'], ['sf90', '#f2c230'], ['artura', '#00a6d6'], ['lfa', '#eef0f2']]   // 488: the hypercar row
+  [['huracan', '#f2c230'], ['c911', '#d6d1c4'], ['m570s', '#5a2d91'], ['gtr', '#1e1f22|matte']],            // NSX: Giallo, Chalk, Ultraviolet, Satin Black
+  [['vantage', '#1f4d36'], ['amggt', '#f3efe6|pearl'], ['i8', '#c98f7a'], ['roma', '#5c1424']],     // SLS: Racing Green, Pearl White, Rose Gold, Bordeaux
+  [['z06', '#6e7174|matte'], ['mustang', '#1b2a4a'], ['fordgt', '#8ec5e6'], ['viper', '#e0457b']],         // C8: Nardo Grey Matte, Navy, Gulf Blue, Flamingo Pink
+  [['revuelto', '#00a6d6'], ['sf90', '#8c6239'], ['artura', '#0f6f74'], ['lfa', '#c9a24a|pearl']] // 488: Miami Blue, Bronze, Petrol Teal, Gold Pearl
 ];
 var SLOTS = phone.matches ? [[4.05, 0.5], [4.5, 0.45]] : [[4.0, 0.55], [4.38, 0.5], [4.76, 0.45], [5.14, 0.4]];
 var ROW_R = 10.4;
@@ -308,7 +309,7 @@ function parkCar(file, color) {
   return loadCar(file).then(function (g) {
     var model = new THREE.Group(), fit = g.scene;
     model.add(fit);
-    fitCar(fit, model);
+    fitCar(fit, model, VEHICLES[file].precise);
     paintCar(fit, VEHICLES[file], color);
     var spot = new THREE.Group();
     var lit = new THREE.Mesh(new THREE.PlaneGeometry(7.5, 7.5), new THREE.MeshBasicMaterial({ map: parkPool, transparent: true, depthWrite: false }));
