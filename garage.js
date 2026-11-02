@@ -296,7 +296,8 @@ function placeDriver() {
    background on their own pools of light. [model, paint, angle around the room (0 = +z), heading tweak] */
 var ROW = phone.matches
   ? [['c911', '#c9cdd2', 4.05, 0.5], ['m570s', '#ff7a1a', 4.5, 0.45]]
-  : [['huracan', '#f2c230', 4.0, 0.55], ['c911', '#3a3f47', 4.38, 0.5], ['m570s', '#ff7a1a', 4.76, 0.45], ['gtr', '#8a9099', 5.14, 0.4], ['viper', '#c8102e', 2.5, -0.5]];
+  : [['huracan', '#f2c230', 4.0, 0.55], ['c911', '#3a3f47', 4.38, 0.5], ['m570s', '#ff7a1a', 4.76, 0.45], ['gtr', '#8a9099', 5.14, 0.4], ['viper', '#c8102e', 2.5, -0.5],
+     ['gt4rs', '#00a6d6', 5.52, 0.35], ['f296', '#d40000', 5.9, 0.3], ['lfa', '#eef0f2', 2.12, -0.45], ['revuelto', '#6fbe2e', 1.74, -0.4]];
 var ROW_R = 10.4;
 var parkPool = radial('rgba(255,226,180,0.13)', 'rgba(255,226,180,0)');
 function parkCar(file, color) {
