@@ -130,6 +130,8 @@ button.bay:hover { border-color: var(--line-2); transform: translateY(-2px); }
 .status.idle { color: var(--muted); }
 .status.service { color: #ffcf8a; border-color: rgba(240, 201, 131, .4); }
 .status.off { color: #9fb6d9; }
+.status.dead { color: #ffb3a8; border-color: rgba(239, 106, 90, .5); }
+.bar.low span { background: var(--red); }
 
 /* ================= Marketplace ================= */
 .toolbar { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; margin-bottom: 16px; }
@@ -453,7 +455,7 @@ img.v3d { transition: opacity .5s, transform .4s; }
 <div class="toasts" id="toasts" aria-live="polite"></div>
 <div id="coach"></div>
 
-<script src="tycoon.js?v=14"></script>
+<script src="tycoon.js?v=15"></script>
 <script type="importmap">
 { "imports": { "three": "https://cdn.jsdelivr.net/npm/three@0.169.0/build/three.module.js", "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.169.0/examples/jsm/" } }
 </script>
